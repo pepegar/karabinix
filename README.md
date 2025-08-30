@@ -39,6 +39,11 @@ Inspired by [@mxstbr's TypeScript-based Karabiner configuration](https://github.
         {
           services.karabinix = {
             enable = true;
+            
+            # Optional: Install Karabiner Elements via Nix (default: false)
+            # installPackage = true;
+            # package = pkgs.karabiner-elements;
+            
             configuration = with karabinix.lib; {
               profiles = [
                 (mkProfile {
@@ -361,15 +366,36 @@ devices = [
 The home-manager module provides additional features:
 
 - Automatic configuration file management
-- Karabiner Elements package installation
+- Optional Karabiner Elements package installation
 - Configuration reload script (`karabinix-reload`)
 
+### Package Installation Options
+
+By default, karabinix only manages the configuration file. You have several options for installing Karabiner Elements:
+
+**Option 1: Install via Homebrew (Recommended for macOS)**
+```bash
+brew install --cask karabiner-elements
+```
+
+**Option 2: Install via Nix (through karabinix)**
 ```nix
 services.karabinix = {
   enable = true;
-  package = pkgs.karabiner-elements;  # Optional: specify package
+  installPackage = true;
+  package = pkgs.karabiner-elements;
   configuration = { /* your config */ };
 };
+```
+
+**Option 3: Install separately via home-manager**
+```nix
+services.karabinix = {
+  enable = true;
+  configuration = { /* your config */ };
+};
+
+home.packages = [ pkgs.karabiner-elements ];
 ```
 
 ## 🛠️ Development

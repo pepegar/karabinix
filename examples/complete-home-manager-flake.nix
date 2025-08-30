@@ -37,6 +37,12 @@
             services.karabinix = {
               enable = true;
               
+              # Optional: Install Karabiner Elements via Nix
+              # By default, karabinix only manages the configuration
+              # Uncomment the lines below to also install the package via Nix
+              # installPackage = true;
+              # package = pkgs.karabiner-elements;
+              
               configuration = with karabinix.lib; {
                 profiles = [
                   (mkProfile {

@@ -16,6 +16,10 @@
   services.karabinix = {
     enable = true;
     
+    # Optional: Install Karabiner Elements via Nix (default: false)
+    # installPackage = true;
+    # package = pkgs.karabiner-elements;
+    
     configuration = with karabinix.lib; {
       profiles = [
         (mkProfile {
@@ -59,8 +63,7 @@
     };
   };
 
-  # Optional: Add Karabiner Elements to system packages
-  home.packages = with pkgs; [
-    karabiner-elements
-  ];
+  # Note: Karabiner Elements package installation is now controlled by the
+  # services.karabinix.installPackage option above. You can also install it
+  # separately via Homebrew: `brew install --cask karabiner-elements`
 }
