@@ -27,9 +27,6 @@ rec {
         rules.mkManipulator {
           from = rules.mkFromEvent {
             key_code = trigger;
-            modifiers = rules.mkModifiers {
-              mandatory = modifiers;
-            };
           };
           to = if isString target then [
             (rules.mkToEvent { key_code = target; })
@@ -213,24 +210,49 @@ rec {
 
   # Vim-style navigation layer
   vimNavigation = { layer_key, variable_name ? "vim_mode" }:
-    layerKey {
-      key = layer_key;
-      variable_name = variable_name;
-      mappings = {
-        h = keyCodes.left_arrow;
-        j = keyCodes.down_arrow;
-        k = keyCodes.up_arrow;
-        l = keyCodes.right_arrow;
-        w = [ keyCodes.right_arrow ]; # word forward (simplified)
-        b = [ keyCodes.left_arrow ];  # word backward (simplified)
-        "0" = keyCodes.home;
-        "4" = keyCodes.end; # $ key
-        u = keyCodes.page_up;
-        d = keyCodes.page_down;
-        g = keyCodes.home;
-        G = keyCodes.end;
+    let
+      # Basic vim navigation mappings
+      basicVimLayer = layerKey {
+        key = layer_key;
+        variable_name = variable_name;
+        mappings = {
+          h = keyCodes.left_arrow;
+          j = keyCodes.down_arrow;
+          k = keyCodes.up_arrow;
+          l = keyCodes.right_arrow;
+          w = [ keyCodes.right_arrow ]; # word forward (simplified)
+          b = [ keyCodes.left_arrow ];  # word backward (simplified)
+          "0" = keyCodes.home;
+          "4" = keyCodes.end; # $ key
+          u = keyCodes.page_up;
+          d = keyCodes.page_down;
+          g = keyCodes.home;
+        };
       };
-    };
+
+      # Additional manipulator for Shift+G (go to end, like Vim's G)
+      shiftGManipulator = rules.mkManipulator {
+        from = rules.mkFromEvent {
+          key_code = keyCodes.g;
+          modifiers = rules.mkModifiers {
+            mandatory = ["left_shift"];
+          };
+        };
+        to = [
+          (rules.mkToEvent { key_code = keyCodes.end; })
+        ];
+        conditions = [
+          (rules.mkCondition {
+            type = "variable_if";
+            name = variable_name;
+            value = 1;
+          })
+        ];
+        description = "Vim layer: Shift+G -> End";
+      };
+
+    in
+    rules.mkRule "Vim Navigation (${layer_key})" (basicVimLayer.manipulators ++ [ shiftGManipulator ]);
 
   # Window management utilities
   windowManagement = { hyper_key ? "spacebar", modifiers ? [ "left_command" "left_control" "left_option" "left_shift" ] }:
