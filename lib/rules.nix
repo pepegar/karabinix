@@ -26,15 +26,13 @@ rec {
     description ? null,
     type ? "basic"
   }: {
-    inherit type from conditions;
-    to = to;
-    to_if_alone = to_if_alone;
-    to_if_held_down = to_if_held_down;
-    to_after_key_up = to_after_key_up;
-    to_delayed_action = to_delayed_action;
-    parameters = parameters;
-    description = description;
-  } // (optionalAttrs (to_delayed_action != null) { inherit to_delayed_action; })
+    inherit type from;
+  } // (optionalAttrs (to != []) { inherit to; })
+    // (optionalAttrs (to_if_alone != []) { inherit to_if_alone; })
+    // (optionalAttrs (to_if_held_down != []) { inherit to_if_held_down; })
+    // (optionalAttrs (to_after_key_up != []) { inherit to_after_key_up; })
+    // (optionalAttrs (to_delayed_action != null) { inherit to_delayed_action; })
+    // (optionalAttrs (conditions != []) { inherit conditions; })
     // (optionalAttrs (parameters != null) { inherit parameters; })
     // (optionalAttrs (description != null) { inherit description; });
 
@@ -59,14 +57,8 @@ rec {
     modifiers ? null,
     simultaneous ? null,
     simultaneous_options ? null
-  }: {
-    key_code = key_code;
-    consumer_key_code = consumer_key_code;
-    pointing_button = pointing_button;
-    modifiers = modifiers;
-    simultaneous = simultaneous;
-    simultaneous_options = simultaneous_options;
-  } // (optionalAttrs (key_code != null) { inherit key_code; })
+  }: {}
+    // (optionalAttrs (key_code != null) { inherit key_code; })
     // (optionalAttrs (consumer_key_code != null) { inherit consumer_key_code; })
     // (optionalAttrs (pointing_button != null) { inherit pointing_button; })
     // (optionalAttrs (modifiers != null) { inherit modifiers; })
@@ -86,19 +78,8 @@ rec {
     repeat ? true,
     halt ? false,
     hold_down_milliseconds ? null
-  }: {
-    key_code = key_code;
-    consumer_key_code = consumer_key_code;
-    pointing_button = pointing_button;
-    shell_command = shell_command;
-    select_input_source = select_input_source;
-    set_variable = set_variable;
-    modifiers = modifiers;
-    lazy = lazy;
-    repeat = repeat;
-    halt = halt;
-    hold_down_milliseconds = hold_down_milliseconds;
-  } // (optionalAttrs (key_code != null) { inherit key_code; })
+  }: {}
+    // (optionalAttrs (key_code != null) { inherit key_code; })
     // (optionalAttrs (consumer_key_code != null) { inherit consumer_key_code; })
     // (optionalAttrs (pointing_button != null) { inherit pointing_button; })
     // (optionalAttrs (shell_command != null) { inherit shell_command; })
@@ -114,9 +95,8 @@ rec {
   mkModifiers = {
     mandatory ? [],
     optional ? []
-  }: {
-    inherit mandatory optional;
-  } // (optionalAttrs (mandatory != []) { inherit mandatory; })
+  }: {}
+    // (optionalAttrs (mandatory != []) { inherit mandatory; })
     // (optionalAttrs (optional != []) { inherit optional; });
 
   # Helper to create conditions
@@ -131,13 +111,6 @@ rec {
     value ? null
   }: {
     inherit type;
-    bundle_identifiers = bundle_identifiers;
-    file_paths = file_paths;
-    identifiers = identifiers;
-    keyboard_types = keyboard_types;
-    input_sources = input_sources;
-    name = name;
-    value = value;
   } // (optionalAttrs (bundle_identifiers != null) { inherit bundle_identifiers; })
     // (optionalAttrs (file_paths != null) { inherit file_paths; })
     // (optionalAttrs (identifiers != null) { inherit identifiers; })
