@@ -58,11 +58,9 @@ in
     # Create the karabiner configuration directory and symlink the config
     home.file.".config/karabiner/karabiner.json".source = cfg.configFile;
 
-    # Ensure Karabiner Elements is available
-    home.packages = [ cfg.package ];
-
-    # Add a script to reload Karabiner configuration
+    # Ensure Karabiner Elements is available and add reload script
     home.packages = [
+      cfg.package
       (pkgs.writeShellScriptBin "karabinix-reload" ''
         echo "Reloading Karabiner Elements configuration..."
         launchctl kickstart -k gui/$(id -u)/org.pqrs.karabiner.karabiner_console_user_server
