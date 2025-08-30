@@ -1,0 +1,169 @@
+{ lib, types }:
+
+with lib;
+
+rec {
+  # Create a simple key modification
+  mkSimpleModification = from: to: {
+    from = {
+      key_code = from;
+    };
+    to = [{
+      key_code = to;
+    }];
+  };
+
+  # Create a basic manipulator
+  mkManipulator = {
+    from,
+    to ? [],
+    to_if_alone ? [],
+    to_if_held_down ? [],
+    to_after_key_up ? [],
+    to_delayed_action ? null,
+    conditions ? [],
+    parameters ? null,
+    description ? null,
+    type ? "basic"
+  }: {
+    inherit type from conditions;
+    to = to;
+    to_if_alone = to_if_alone;
+    to_if_held_down = to_if_held_down;
+    to_after_key_up = to_after_key_up;
+    to_delayed_action = to_delayed_action;
+    parameters = parameters;
+    description = description;
+  } // (optionalAttrs (to_delayed_action != null) { inherit to_delayed_action; })
+    // (optionalAttrs (parameters != null) { inherit parameters; })
+    // (optionalAttrs (description != null) { inherit description; });
+
+  # Create a rule with multiple manipulators
+  mkRule = description: manipulators: {
+    inherit description manipulators;
+  };
+
+  # Create a complex modification (collection of rules)
+  mkComplexModification = {
+    rules ? [],
+    parameters ? null
+  }: {
+    inherit rules;
+  } // (optionalAttrs (parameters != null) { inherit parameters; });
+
+  # Helper to create a from event
+  mkFromEvent = {
+    key_code ? null,
+    consumer_key_code ? null,
+    pointing_button ? null,
+    modifiers ? null,
+    simultaneous ? null,
+    simultaneous_options ? null
+  }: {
+    key_code = key_code;
+    consumer_key_code = consumer_key_code;
+    pointing_button = pointing_button;
+    modifiers = modifiers;
+    simultaneous = simultaneous;
+    simultaneous_options = simultaneous_options;
+  } // (optionalAttrs (key_code != null) { inherit key_code; })
+    // (optionalAttrs (consumer_key_code != null) { inherit consumer_key_code; })
+    // (optionalAttrs (pointing_button != null) { inherit pointing_button; })
+    // (optionalAttrs (modifiers != null) { inherit modifiers; })
+    // (optionalAttrs (simultaneous != null) { inherit simultaneous; })
+    // (optionalAttrs (simultaneous_options != null) { inherit simultaneous_options; });
+
+  # Helper to create a to event
+  mkToEvent = {
+    key_code ? null,
+    consumer_key_code ? null,
+    pointing_button ? null,
+    shell_command ? null,
+    select_input_source ? null,
+    set_variable ? null,
+    modifiers ? [],
+    lazy ? false,
+    repeat ? true,
+    halt ? false,
+    hold_down_milliseconds ? null
+  }: {
+    key_code = key_code;
+    consumer_key_code = consumer_key_code;
+    pointing_button = pointing_button;
+    shell_command = shell_command;
+    select_input_source = select_input_source;
+    set_variable = set_variable;
+    modifiers = modifiers;
+    lazy = lazy;
+    repeat = repeat;
+    halt = halt;
+    hold_down_milliseconds = hold_down_milliseconds;
+  } // (optionalAttrs (key_code != null) { inherit key_code; })
+    // (optionalAttrs (consumer_key_code != null) { inherit consumer_key_code; })
+    // (optionalAttrs (pointing_button != null) { inherit pointing_button; })
+    // (optionalAttrs (shell_command != null) { inherit shell_command; })
+    // (optionalAttrs (select_input_source != null) { inherit select_input_source; })
+    // (optionalAttrs (set_variable != null) { inherit set_variable; })
+    // (optionalAttrs (modifiers != []) { inherit modifiers; })
+    // (optionalAttrs lazy { inherit lazy; })
+    // (optionalAttrs (!repeat) { inherit repeat; })
+    // (optionalAttrs halt { inherit halt; })
+    // (optionalAttrs (hold_down_milliseconds != null) { inherit hold_down_milliseconds; });
+
+  # Helper to create modifiers specification
+  mkModifiers = {
+    mandatory ? [],
+    optional ? []
+  }: {
+    inherit mandatory optional;
+  } // (optionalAttrs (mandatory != []) { inherit mandatory; })
+    // (optionalAttrs (optional != []) { inherit optional; });
+
+  # Helper to create conditions
+  mkCondition = {
+    type,
+    bundle_identifiers ? null,
+    file_paths ? null,
+    identifiers ? null,
+    keyboard_types ? null,
+    input_sources ? null,
+    name ? null,
+    value ? null
+  }: {
+    inherit type;
+    bundle_identifiers = bundle_identifiers;
+    file_paths = file_paths;
+    identifiers = identifiers;
+    keyboard_types = keyboard_types;
+    input_sources = input_sources;
+    name = name;
+    value = value;
+  } // (optionalAttrs (bundle_identifiers != null) { inherit bundle_identifiers; })
+    // (optionalAttrs (file_paths != null) { inherit file_paths; })
+    // (optionalAttrs (identifiers != null) { inherit identifiers; })
+    // (optionalAttrs (keyboard_types != null) { inherit keyboard_types; })
+    // (optionalAttrs (input_sources != null) { inherit input_sources; })
+    // (optionalAttrs (name != null) { inherit name; })
+    // (optionalAttrs (value != null) { inherit value; });
+
+  # Create a profile
+  mkProfile = {
+    name,
+    selected ? false,
+    simple_modifications ? [],
+    complex_modifications ? { rules = []; },
+    devices ? [],
+    fn_function_keys ? [],
+    virtual_hid_keyboard ? {}
+  }: {
+    inherit name selected simple_modifications complex_modifications devices fn_function_keys virtual_hid_keyboard;
+  };
+
+  # Create the main configuration
+  mkConfiguration = {
+    global ? {},
+    profiles
+  }: {
+    inherit global profiles;
+  };
+}

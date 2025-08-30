@@ -1,0 +1,67 @@
+# Home Manager Integration Example
+# This shows how to use karabinix with home-manager
+
+{ config, pkgs, ... }:
+
+let
+  karabinix = builtins.getFlake "github:pepegar/karabinix";
+in
+
+{
+  # Import the karabinix home-manager module
+  imports = [
+    karabinix.homeManagerModules.karabinix
+  ];
+
+  # Enable and configure karabinix
+  services.karabinix = {
+    enable = true;
+    
+    configuration = with karabinix.lib; {
+      profiles = [
+        (mkProfile {
+          name = "Home Manager Profile";
+          selected = true;
+
+          simple_modifications = [
+            # Basic remappings
+            modifierRemaps.caps_to_ctrl
+            modifierRemaps.right_opt_to_ctrl
+          ];
+
+          complex_modifications = mkComplexModification {
+            rules = [
+              # Vim navigation layer
+              (vimNavigation {
+                layer_key = keyCodes.caps_lock;
+              })
+
+              # Window management with hyper key
+              (windowManagement {
+                hyper_key = keyCodes.spacebar;
+              })
+
+              # Application launcher
+              (appLauncher {
+                hyper_key = keyCodes.spacebar;
+                apps = {
+                  t = "Terminal";
+                  c = "Visual Studio Code";
+                  f = "Finder";
+                  s = "Safari";
+                  m = "Mail";
+                  n = "Notes";
+                };
+              })
+            ];
+          };
+        })
+      ];
+    };
+  };
+
+  # Optional: Add Karabiner Elements to system packages
+  home.packages = with pkgs; [
+    karabiner-elements
+  ];
+}
