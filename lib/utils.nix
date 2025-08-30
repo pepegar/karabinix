@@ -38,7 +38,7 @@ rec {
           else [
             target
           ];
-          description = "Hyper + ${trigger} -> ${if isString target then target else toString target}";
+          description = "Hyper + ${trigger} -> ${if isString target then target else if isList target then toString target else "action"}";
         }
       ) mappings;
 
@@ -111,7 +111,7 @@ rec {
     rules.mkManipulator {
       from = simultaneousFrom;
       to = toEvents;
-      description = "Simultaneous: ${concatStringsSep " + " keys} -> ${toString to}";
+      description = "Simultaneous: ${concatStringsSep " + " keys} -> ${if isString to then to else if isList to then toString to else "action"}";
     };
 
   # Create a layer key (key that activates a layer when held)
@@ -140,7 +140,7 @@ rec {
               value = 1;
             })
           ];
-          description = "Layer ${key}: ${trigger} -> ${toString target}";
+          description = "Layer ${key}: ${trigger} -> ${if isString target then target else if isList target then toString target else "action"}";
         }
       ) mappings;
 
