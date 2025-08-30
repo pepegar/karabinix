@@ -1,11 +1,10 @@
 # Home Manager Integration Example
 # This shows how to use karabinix with home-manager
+# 
+# This file should be used as part of a flake that includes karabinix as an input.
+# See the flake.nix example below for the complete setup.
 
-{ config, pkgs, ... }:
-
-let
-  karabinix = builtins.getFlake "github:pepegar/karabinix";
-in
+{ config, pkgs, karabinix, ... }:
 
 {
   # Import the karabinix home-manager module

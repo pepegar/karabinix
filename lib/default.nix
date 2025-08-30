@@ -32,7 +32,13 @@ in
     appCondition
     deviceCondition
     keyboardTypeCondition
-    variableCondition;
+    variableCondition
+    vimNavigation
+    windowManagement
+    mediaKeys
+    modifierRemaps
+    appLauncher
+    textSnippets;
 
   # Key code constants
   keyCodes = import ./keycodes.nix;

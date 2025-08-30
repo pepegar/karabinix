@@ -20,44 +20,55 @@ Inspired by [@mxstbr's TypeScript-based Karabiner configuration](https://github.
 
 ```nix
 {
+  description = "My Home Manager configuration";
+  
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    home-manager.url = "github:nix-community/home-manager";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     karabinix.url = "github:pepegar/karabinix";
   };
-}
-```
 
-2. Import the home-manager module:
-
-```nix
-{
-  imports = [
-    karabinix.homeManagerModules.karabinix
-  ];
-
-  services.karabinix = {
-    enable = true;
-    configuration = with karabinix.lib; {
-      profiles = [
-        (mkProfile {
-          name = "My Profile";
-          selected = true;
-          
-          simple_modifications = [
-            (mapKey keyCodes.caps_lock keyCodes.left_control)
-          ];
-          
-          complex_modifications = mkComplexModification {
-            rules = [
-              (vimNavigation { layer_key = keyCodes.caps_lock; })
-            ];
+  outputs = { nixpkgs, home-manager, karabinix, ... }: {
+    homeConfigurations."your-username" = home-manager.lib.homeManagerConfiguration {
+      pkgs = nixpkgs.legacyPackages.x86_64-darwin; # or aarch64-darwin
+      modules = [
+        karabinix.homeManagerModules.karabinix
+        {
+          services.karabinix = {
+            enable = true;
+            configuration = with karabinix.lib; {
+              profiles = [
+                (mkProfile {
+                  name = "My Profile";
+                  selected = true;
+                  
+                  simple_modifications = [
+                    (mapKey keyCodes.caps_lock keyCodes.left_control)
+                  ];
+                  
+                  complex_modifications = mkComplexModification {
+                    rules = [
+                      (vimNavigation { layer_key = keyCodes.caps_lock; })
+                    ];
+                  };
+                })
+              ];
+            };
           };
-        })
+        }
       ];
     };
   };
 }
+```
+
+2. Apply the configuration:
+
+```bash
+home-manager switch --flake .#your-username
 ```
 
 ### Using Templates
