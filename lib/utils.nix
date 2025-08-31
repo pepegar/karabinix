@@ -287,51 +287,7 @@ rec {
     in
     rules.mkRule "Vim Navigation (${layer_key})" (basicVimLayer.manipulators ++ [ shiftGManipulator ]);
 
-  # Window management utilities
-  windowManagement = { hyper_key ? "spacebar", modifiers ? [ "left_command" "left_control" "left_option" "left_shift" ] }:
-    hyperKey {
-      key = hyper_key;
-      modifiers = modifiers;
-      mappings = {
-        # Window positioning
-        h = {
-          shell_command = "yabai -m window --resize left:-50:0 || yabai -m window --resize right:-50:0";
-        };
-        l = {
-          shell_command = "yabai -m window --resize right:50:0 || yabai -m window --resize left:50:0";
-        };
-        k = {
-          shell_command = "yabai -m window --resize top:0:-50 || yabai -m window --resize bottom:0:-50";
-        };
-        j = {
-          shell_command = "yabai -m window --resize bottom:0:50 || yabai -m window --resize top:0:50";
-        };
-        
-        # Window focus
-        "1" = {
-          shell_command = "yabai -m space --focus 1";
-        };
-        "2" = {
-          shell_command = "yabai -m space --focus 2";
-        };
-        "3" = {
-          shell_command = "yabai -m space --focus 3";
-        };
-        "4" = {
-          shell_command = "yabai -m space --focus 4";
-        };
-        
-        # Fullscreen
-        f = {
-          shell_command = "yabai -m window --toggle zoom-fullscreen";
-        };
-        
-        # Float/unfloat
-        t = {
-          shell_command = "yabai -m window --toggle float";
-        };
-      };
-    };
+
 
   # Media key utilities
   mediaKeys = {
@@ -364,6 +320,54 @@ rec {
       mappings = mapAttrs (key: app: {
         shell_command = "open -a '${app}'";
       }) apps;
+    };
+
+  # Raycast window management function
+  # Creates a shell command to trigger Raycast window management actions
+  raycastWindow = name: {
+    shell_command = "open -g raycast://extensions/raycast/window-management/${name}";
+  };
+
+  # Raycast window management shortcuts
+  # Provides common window management actions using Raycast
+  raycastWindowManagement = { hyper_key ? "spacebar", modifiers ? [ "left_command" "left_control" "left_option" "left_shift" ] }:
+    hyperKey {
+      key = hyper_key;
+      modifiers = modifiers;
+      mappings = {
+        # Window positioning
+        h = raycastWindow "left-half";
+        l = raycastWindow "right-half";
+        k = raycastWindow "top-half";
+        j = raycastWindow "bottom-half";
+        
+        # Quarters
+        u = raycastWindow "top-left-quarter";
+        i = raycastWindow "top-right-quarter";
+        n = raycastWindow "bottom-left-quarter";
+        m = raycastWindow "bottom-right-quarter";
+        
+        # Fullscreen and center
+        f = raycastWindow "maximize";
+        c = raycastWindow "center";
+        
+        # Thirds
+        "1" = raycastWindow "first-third";
+        "2" = raycastWindow "center-third";
+        "3" = raycastWindow "last-third";
+        
+        # Two thirds
+        "4" = raycastWindow "first-two-thirds";
+        "5" = raycastWindow "last-two-thirds";
+        
+        # Move between displays
+        "shift+h" = raycastWindow "previous-display";
+        "shift+l" = raycastWindow "next-display";
+        
+        # Restore and minimize
+        r = raycastWindow "restore";
+        "shift+m" = raycastWindow "minimize";
+      };
     };
 
   # Quick text snippets
