@@ -30,13 +30,13 @@ in
     simultaneousKeys
     layerKey
     appLayerKey
+    sublayerKey
     appCondition
     deviceCondition
     keyboardTypeCondition
     variableCondition
     vimNavigation
     raycastWindow
-    raycastWindowManagement
     mediaKeys
     modifierRemaps
     appLauncher

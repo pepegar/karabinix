@@ -328,48 +328,6 @@ rec {
     shell_command = "open -g raycast://extensions/raycast/window-management/${name}";
   };
 
-  # Raycast window management shortcuts
-  # Provides common window management actions using Raycast
-  raycastWindowManagement = { hyper_key ? "spacebar", modifiers ? [ "left_command" "left_control" "left_option" "left_shift" ] }:
-    hyperKey {
-      key = hyper_key;
-      modifiers = modifiers;
-      mappings = {
-        # Window positioning
-        h = raycastWindow "left-half";
-        l = raycastWindow "right-half";
-        k = raycastWindow "top-half";
-        j = raycastWindow "bottom-half";
-        
-        # Quarters
-        u = raycastWindow "top-left-quarter";
-        i = raycastWindow "top-right-quarter";
-        n = raycastWindow "bottom-left-quarter";
-        m = raycastWindow "bottom-right-quarter";
-        
-        # Fullscreen and center
-        f = raycastWindow "maximize";
-        c = raycastWindow "center";
-        
-        # Thirds
-        "1" = raycastWindow "first-third";
-        "2" = raycastWindow "center-third";
-        "3" = raycastWindow "last-third";
-        
-        # Two thirds
-        "4" = raycastWindow "first-two-thirds";
-        "5" = raycastWindow "last-two-thirds";
-        
-        # Move between displays
-        "shift+h" = raycastWindow "previous-display";
-        "shift+l" = raycastWindow "next-display";
-        
-        # Restore and minimize
-        r = raycastWindow "restore";
-        "shift+m" = raycastWindow "minimize";
-      };
-    };
-
   # Quick text snippets
   textSnippets = snippets:
     map (snippet:
@@ -481,4 +439,135 @@ rec {
 
     in
     rules.mkRule "App Layer: ${key}" ([ layerKeyManipulator ] ++ allAppManipulators);
+
+  # This allows for hyper + sublayer + action patterns (e.g., hyper+o+w)
+  sublayerKey = {
+    key,                           # The main hyper key (e.g., "caps_lock")
+    alone_key,                     # What to send if pressed alone
+    variable_name,                 # Base variable name for the hyper key
+    sublayers                      # Nested sublayers: { "o" = { "w" = action; }; }
+  }:
+    let
+      # Helper to convert action to toEvent
+      actionToToEvent = action:
+        if isString action then
+          rules.mkToEvent { key_code = action; }
+        else if isList action then
+          map (a: if isString a then rules.mkToEvent { key_code = a; } else a) action
+        else
+          action;
+
+      # Create the main hyper key manipulator
+      hyperKeyManipulator = rules.mkManipulator {
+        from = rules.mkFromEvent { key_code = key; };
+        to = [
+          (rules.mkToEvent {
+            set_variable = {
+              name = variable_name;
+              value = 1;
+            };
+          })
+        ];
+        to_if_alone = if alone_key != null then [
+          (rules.mkToEvent { key_code = alone_key; })
+        ] else [];
+        to_after_key_up = [
+          (rules.mkToEvent {
+            set_variable = {
+              name = variable_name;
+              value = 0;
+            };
+          })
+        ];
+        description = "Hyper Key (${key})";
+      };
+
+      # Get all sublayer keys to create mutual exclusion conditions
+      sublayerKeys = attrNames sublayers;
+      
+      # Create sublayer variable names
+      sublayerVariableNames = map (sublayerKey: "${variable_name}_sublayer_${sublayerKey}") sublayerKeys;
+      
+      # Helper to create conditions that ensure only one sublayer is active
+      createMutualExclusionConditions = currentSublayerKey:
+        let
+          otherSublayerKeys = filter (k: k != currentSublayerKey) sublayerKeys;
+          otherVariableNames = map (k: "${variable_name}_sublayer_${k}") otherSublayerKeys;
+        in
+        # Hyper must be active
+        [ (rules.mkCondition {
+            type = "variable_if";
+            name = variable_name;
+            value = 1;
+          }) ] ++
+        # All other sublayers must be inactive
+        (map (varName: rules.mkCondition {
+          type = "variable_if";
+          name = varName;
+          value = 0;
+        }) otherVariableNames);
+
+      # Create sublayer activation manipulators
+      createSublayerActivator = sublayerKey: sublayerMappings:
+        let
+          sublayerVarName = "${variable_name}_sublayer_${sublayerKey}";
+          conditions = createMutualExclusionConditions sublayerKey;
+        in
+        rules.mkManipulator {
+          from = rules.mkFromEvent { key_code = sublayerKey; };
+          to = [
+            (rules.mkToEvent {
+              set_variable = {
+                name = sublayerVarName;
+                value = 1;
+              };
+            })
+          ];
+          to_after_key_up = [
+            (rules.mkToEvent {
+              set_variable = {
+                name = sublayerVarName;
+                value = 0;
+              };
+            })
+          ];
+          conditions = conditions;
+          description = "Toggle Hyper sublayer ${sublayerKey}";
+        };
+
+      # Create action manipulators for each sublayer
+      createSublayerActions = sublayerKey: sublayerMappings:
+        let
+          sublayerVarName = "${variable_name}_sublayer_${sublayerKey}";
+        in
+        mapAttrsToList (actionKey: action:
+          rules.mkManipulator {
+            from = rules.mkFromEvent { key_code = actionKey; };
+            to = if isList action then
+              map actionToToEvent action
+            else [
+              (actionToToEvent action)
+            ];
+            conditions = [
+              (rules.mkCondition {
+                type = "variable_if";
+                name = sublayerVarName;
+                value = 1;
+              })
+            ];
+            description = "Hyper ${sublayerKey} + ${actionKey}";
+          }
+        ) sublayerMappings;
+
+      # Create all sublayer activators
+      sublayerActivators = mapAttrsToList createSublayerActivator sublayers;
+      
+      # Create all sublayer actions
+      allSublayerActions = flatten (mapAttrsToList createSublayerActions sublayers);
+
+      # Combine all manipulators
+      allManipulators = [ hyperKeyManipulator ] ++ sublayerActivators ++ allSublayerActions;
+
+    in
+    rules.mkRule "Sublayer System (${key})" allManipulators;
 }
