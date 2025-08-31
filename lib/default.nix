@@ -35,7 +35,8 @@ in
     keyboardTypeCondition
     variableCondition
     vimNavigation
-    windowManagement
+    raycastWindow
+    raycastWindowManagement
     mediaKeys
     modifierRemaps
     appLauncher
