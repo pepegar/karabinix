@@ -119,10 +119,43 @@ rec {
     variable_name ? "${key}_layer"
   }:
     let
+      # Helper function to parse trigger keys that may include modifiers
+      # Supports syntax like "shift+m", "ctrl+shift+a", or just "m"
+      parseTrigger = trigger:
+        let
+          parts = splitString "+" trigger;
+          key_code = last parts;
+          modifierParts = init parts;
+          
+          # Map modifier names to Karabiner modifier names
+          mapModifier = mod:
+            if mod == "shift" then "left_shift"
+            else if mod == "ctrl" || mod == "control" then "left_control"
+            else if mod == "alt" || mod == "option" then "left_option"
+            else if mod == "cmd" || mod == "command" then "left_command"
+            else if mod == "fn" then "fn"
+            else mod; # Pass through as-is for exact modifier names
+        in
+        {
+          key_code = key_code;
+        } // (optionalAttrs (modifierParts != []) {
+          modifiers = map mapModifier modifierParts;
+        });
+
       # Create manipulators for each mapping in the layer
       layerManipulators = mapAttrsToList (trigger: target:
+        let
+          triggerSpec = parseTrigger trigger;
+          fromEvent = rules.mkFromEvent ({
+            key_code = triggerSpec.key_code;
+          } // (optionalAttrs (triggerSpec ? modifiers) {
+            modifiers = rules.mkModifiers {
+              mandatory = triggerSpec.modifiers;
+            };
+          }));
+        in
         rules.mkManipulator {
-          from = rules.mkFromEvent { key_code = trigger; };
+          from = fromEvent;
           to = if isString target then [
             (rules.mkToEvent { key_code = target; })
           ] else if isList target then
