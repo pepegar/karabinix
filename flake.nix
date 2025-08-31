@@ -7,12 +7,16 @@
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
   };
 
-  outputs = { self, nixpkgs, flake-utils, pre-commit-hooks }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+    pre-commit-hooks,
+  }:
+    flake-utils.lib.eachDefaultSystem (
+      system: let
         pkgs = nixpkgs.legacyPackages.${system};
-      in
-      {
+      in {
         # Development shell for working on karabinix
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
@@ -35,9 +39,10 @@
           };
         };
       }
-    ) // {
+    )
+    // {
       # Library functions available to all systems
-      lib = import ./lib { inherit (nixpkgs) lib; };
+      lib = import ./lib {inherit (nixpkgs) lib;};
 
       # Home Manager modules
       homeManagerModules = {
