@@ -29,6 +29,7 @@ in
     hyperKey
     simultaneousKeys
     layerKey
+    appLayerKey
     appCondition
     deviceCondition
     keyboardTypeCondition

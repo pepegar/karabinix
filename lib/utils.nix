@@ -380,4 +380,101 @@ rec {
         description = "Text snippet: ${snippet.trigger} -> ${snippet.text}";
       }
     ) snippets;
+
+  # Create per-application layer keys
+  # This allows different layer mappings based on the frontmost application
+  appLayerKey = {
+    key,
+    alone_key ? null,
+    variable_name ? "${key}_app_layer",
+    app_mappings # attrset where keys are app bundle IDs and values are mapping attrsets
+  }:
+    let
+      # Helper function to parse trigger keys that may include modifiers
+      # Supports syntax like "shift+m", "ctrl+shift+a", or just "m"
+      parseTrigger = trigger:
+        let
+          parts = splitString "+" trigger;
+          key_code = last parts;
+          modifierParts = init parts;
+          
+          # Map modifier names to Karabiner modifier names
+          mapModifier = mod:
+            if mod == "shift" then "left_shift"
+            else if mod == "ctrl" || mod == "control" then "left_control"
+            else if mod == "alt" || mod == "option" then "left_option"
+            else if mod == "cmd" || mod == "command" then "left_command"
+            else if mod == "fn" then "fn"
+            else mod; # Pass through as-is for exact modifier names
+        in
+        {
+          key_code = key_code;
+        } // (optionalAttrs (modifierParts != []) {
+          modifiers = map mapModifier modifierParts;
+        });
+
+      # Create manipulators for each app's mappings
+      createAppManipulators = appId: mappings:
+        mapAttrsToList (trigger: target:
+          let
+            triggerSpec = parseTrigger trigger;
+            fromEvent = rules.mkFromEvent ({
+              key_code = triggerSpec.key_code;
+            } // (optionalAttrs (triggerSpec ? modifiers) {
+              modifiers = rules.mkModifiers {
+                mandatory = triggerSpec.modifiers;
+              };
+            }));
+          in
+          rules.mkManipulator {
+            from = fromEvent;
+            to = if isString target then [
+              (rules.mkToEvent { key_code = target; })
+            ] else if isList target then
+              map (t: rules.mkToEvent { key_code = t; }) target
+            else [
+              target
+            ];
+            conditions = [
+              (rules.mkCondition {
+                type = "variable_if";
+                name = variable_name;
+                value = 1;
+              })
+              (appCondition appId "frontmost_application_if")
+            ];
+            description = "App Layer ${key} (${appId}): ${trigger} -> ${if isString target then target else if isList target then toString target else "action"}";
+          }
+        ) mappings;
+
+      # Create all manipulators for all apps
+      allAppManipulators = flatten (mapAttrsToList createAppManipulators app_mappings);
+
+      # Layer activation key
+      layerKeyManipulator = rules.mkManipulator {
+        from = rules.mkFromEvent { key_code = key; };
+        to = [
+          (rules.mkToEvent {
+            set_variable = {
+              name = variable_name;
+              value = 1;
+            };
+          })
+        ];
+        to_if_alone = if alone_key != null then [
+          (rules.mkToEvent { key_code = alone_key; })
+        ] else [];
+        to_after_key_up = [
+          (rules.mkToEvent {
+            set_variable = {
+              name = variable_name;
+              value = 0;
+            };
+          })
+        ];
+        description = "App Layer key (${key})";
+      };
+
+    in
+    rules.mkRule "App Layer: ${key}" ([ layerKeyManipulator ] ++ allAppManipulators);
 }
