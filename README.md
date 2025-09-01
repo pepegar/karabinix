@@ -195,6 +195,48 @@ vimNavigation {
 }
 ```
 
+#### `homeRowMod`
+Creates a single home row mod key (tap for key, hold for modifier).
+
+```nix
+homeRowMod {
+  key = keyCodes.s;
+  modifier = keyCodes.left_option;
+  description = "S: Option when held, S when tapped";  # optional
+}
+```
+
+#### `homeRowMods`
+Creates multiple home row mods at once using an attribute set.
+
+```nix
+homeRowMods {
+  s = keyCodes.left_option;   # S = Option when held, S when tapped
+  d = keyCodes.left_control;  # D = Control when held, D when tapped  
+  f = keyCodes.left_command;  # F = Command when held, F when tapped
+  j = keyCodes.right_command; # J = Command when held, J when tapped
+  k = keyCodes.right_control; # K = Control when held, K when tapped
+  l = keyCodes.right_option;  # L = Option when held, L when tapped
+}
+```
+
+#### Pre-built Home Row Mod Configurations
+
+**`standardHomeRowMods`** - Standard QWERTY layout:
+- A=Shift, S=Option, D=Control, F=Command
+- J=Command, K=Control, L=Option, ;=Shift
+
+**`altHomeRowMods`** - Alternative layout:
+- A=Control, S=Option, D=Command, F=Shift  
+- J=Shift, K=Command, L=Option, ;=Control
+
+```nix
+# Use predefined configurations
+rules = [ standardHomeRowMods ];
+# or
+rules = [ altHomeRowMods ];
+```
+
 ### Conditions
 
 #### `appCondition`

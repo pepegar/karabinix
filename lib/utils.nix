@@ -440,6 +440,72 @@ rec {
     in
     rules.mkRule "App Layer: ${key}" ([ layerKeyManipulator ] ++ allAppManipulators);
 
+  # Home row mod utilities
+  # Create a single home row mod key (tap for key, hold for modifier)
+  homeRowMod = {
+    key,                          # The key to modify (e.g., "s", "d", "f", etc.)
+    modifier,                     # The modifier when held (e.g., "left_option", "left_control", etc.)
+    description ? null            # Optional custom description
+  }:
+    rules.mkManipulator {
+      from = rules.mkFromEvent {
+        key_code = key;
+      };
+      to_if_alone = [
+        (rules.mkToEvent {
+          halt = true;
+          key_code = key;
+        })
+      ];
+      to_if_held_down = [
+        (rules.mkToEvent {
+          halt = true;
+          key_code = modifier;
+        })
+      ];
+      to_delayed_action = {
+        to_if_canceled = [{ key_code = key; }];
+        to_if_invoked = [{ key_code = "vk_none"; }];
+      };
+      description = if description != null then description 
+                   else "${key}: ${modifier} when held, ${key} when tapped";
+    };
+
+  # Create multiple home row mods at once
+  # Takes an attribute set where keys are the keys to modify and values are the modifiers
+  homeRowMods = mods:
+    let
+      modList = mapAttrsToList (key: modifier:
+        homeRowMod { inherit key modifier; }
+      ) mods;
+    in
+    rules.mkRule "Home Row Mods" modList;
+
+  # Predefined common home row mod configurations
+  # Standard QWERTY home row mods (ASDF / JKL;)
+  standardHomeRowMods = homeRowMods {
+    a = keyCodes.left_shift;
+    s = keyCodes.left_option;
+    d = keyCodes.left_control;
+    f = keyCodes.left_command;
+    j = keyCodes.right_command;
+    k = keyCodes.right_control;
+    l = keyCodes.right_option;
+    semicolon = keyCodes.right_shift;
+  };
+
+  # Alternative home row mods (more common for some users)
+  altHomeRowMods = homeRowMods {
+    a = keyCodes.left_control;
+    s = keyCodes.left_option;
+    d = keyCodes.left_command;
+    f = keyCodes.left_shift;
+    j = keyCodes.right_shift;
+    k = keyCodes.right_command;
+    l = keyCodes.right_option;
+    semicolon = keyCodes.right_control;
+  };
+
   # This allows for hyper + sublayer + action patterns (e.g., hyper+o+w)
   sublayerKey = {
     key,                           # The main hyper key (e.g., "caps_lock")
