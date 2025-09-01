@@ -40,7 +40,11 @@ in
     mediaKeys
     modifierRemaps
     appLauncher
-    textSnippets;
+    textSnippets
+    homeRowMod
+    homeRowMods
+    standardHomeRowMods
+    altHomeRowMods;
 
   # Key code constants
   keyCodes = import ./keycodes.nix;
