@@ -1,18 +1,24 @@
-{ lib }:
-
-with lib;
-
-rec {
+{lib}:
+with lib; rec {
   # Key code type - represents a Karabiner key code
   keyCode = types.str;
 
   # Modifier type - represents modifier keys
   modifier = types.enum [
-    "left_command" "right_command" "command"
-    "left_control" "right_control" "control"
-    "left_shift" "right_shift" "shift"
-    "left_option" "right_option" "option"
-    "fn" "caps_lock"
+    "left_command"
+    "right_command"
+    "command"
+    "left_control"
+    "right_control"
+    "control"
+    "left_shift"
+    "right_shift"
+    "shift"
+    "left_option"
+    "right_option"
+    "option"
+    "fn"
+    "caps_lock"
   ];
 
   # From event type - what triggers the modification
@@ -77,17 +83,17 @@ rec {
               description = "Detect uninterrupted key down";
             };
             key_down_order = mkOption {
-              type = types.nullOr (types.enum [ "strict" "strict_inverse" "insensitive" ]);
+              type = types.nullOr (types.enum ["strict" "strict_inverse" "insensitive"]);
               default = null;
               description = "Key down order requirement";
             };
             key_up_order = mkOption {
-              type = types.nullOr (types.enum [ "strict" "strict_inverse" "insensitive" ]);
+              type = types.nullOr (types.enum ["strict" "strict_inverse" "insensitive"]);
               default = null;
               description = "Key up order requirement";
             };
             key_up_when = mkOption {
-              type = types.nullOr (types.enum [ "any" "all" ]);
+              type = types.nullOr (types.enum ["any" "all"]);
               default = null;
               description = "When to trigger key up";
             };
@@ -163,7 +169,7 @@ rec {
               description = "Variable name";
             };
             value = mkOption {
-              type = types.oneOf [ types.str types.int types.bool ];
+              type = types.oneOf [types.str types.int types.bool];
               description = "Variable value";
             };
           };
@@ -313,7 +319,7 @@ rec {
       };
 
       value = mkOption {
-        type = types.nullOr (types.oneOf [ types.str types.int types.bool ]);
+        type = types.nullOr (types.oneOf [types.str types.int types.bool]);
         default = null;
         description = "Variable value";
       };
@@ -324,7 +330,7 @@ rec {
   manipulator = types.submodule {
     options = {
       type = mkOption {
-        type = types.enum [ "basic" "mouse_motion_to_scroll" ];
+        type = types.enum ["basic" "mouse_motion_to_scroll"];
         default = "basic";
         description = "Type of manipulator";
       };
@@ -523,7 +529,7 @@ rec {
             };
           };
         };
-        default = { rules = []; };
+        default = {rules = [];};
         description = "Complex modifications";
       };
 

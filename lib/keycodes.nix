@@ -1,22 +1,67 @@
 # Karabiner Elements key codes
 # Based on https://karabiner-elements.pqrs.org/docs/json/complex-modifications-manipulator-definition/from/
-
 {
   # Letters
-  a = "a"; b = "b"; c = "c"; d = "d"; e = "e"; f = "f"; g = "g"; h = "h";
-  i = "i"; j = "j"; k = "k"; l = "l"; m = "m"; n = "n"; o = "o"; p = "p";
-  q = "q"; r = "r"; s = "s"; t = "t"; u = "u"; v = "v"; w = "w"; x = "x";
-  y = "y"; z = "z";
+  a = "a";
+  b = "b";
+  c = "c";
+  d = "d";
+  e = "e";
+  f = "f";
+  g = "g";
+  h = "h";
+  i = "i";
+  j = "j";
+  k = "k";
+  l = "l";
+  m = "m";
+  n = "n";
+  o = "o";
+  p = "p";
+  q = "q";
+  r = "r";
+  s = "s";
+  t = "t";
+  u = "u";
+  v = "v";
+  w = "w";
+  x = "x";
+  y = "y";
+  z = "z";
 
   # Numbers
-  "0" = "0"; "1" = "1"; "2" = "2"; "3" = "3"; "4" = "4";
-  "5" = "5"; "6" = "6"; "7" = "7"; "8" = "8"; "9" = "9";
+  "0" = "0";
+  "1" = "1";
+  "2" = "2";
+  "3" = "3";
+  "4" = "4";
+  "5" = "5";
+  "6" = "6";
+  "7" = "7";
+  "8" = "8";
+  "9" = "9";
 
   # Function keys
-  f1 = "f1"; f2 = "f2"; f3 = "f3"; f4 = "f4"; f5 = "f5"; f6 = "f6";
-  f7 = "f7"; f8 = "f8"; f9 = "f9"; f10 = "f10"; f11 = "f11"; f12 = "f12";
-  f13 = "f13"; f14 = "f14"; f15 = "f15"; f16 = "f16"; f17 = "f17"; f18 = "f18";
-  f19 = "f19"; f20 = "f20";
+  f1 = "f1";
+  f2 = "f2";
+  f3 = "f3";
+  f4 = "f4";
+  f5 = "f5";
+  f6 = "f6";
+  f7 = "f7";
+  f8 = "f8";
+  f9 = "f9";
+  f10 = "f10";
+  f11 = "f11";
+  f12 = "f12";
+  f13 = "f13";
+  f14 = "f14";
+  f15 = "f15";
+  f16 = "f16";
+  f17 = "f17";
+  f18 = "f18";
+  f19 = "f19";
+  f20 = "f20";
 
   # Arrow keys
   up_arrow = "up_arrow";
