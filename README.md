@@ -310,10 +310,10 @@ Karabinix includes optional notification support for debugging configurations:
 
 ```nix
 # Debug a layer key (disabled by default)
-debugLayerKey {
+layerKey {
   key = keyCodes.spacebar;
   layer_name = "Navigation";
-  enable_debug = false; # Set to true to enable notifications
+  enable_debug = true; # Set to true to enable notifications with mappings
   mappings = {
     h = keyCodes.left_arrow;
     j = keyCodes.down_arrow;
@@ -321,6 +321,8 @@ debugLayerKey {
     l = keyCodes.right_arrow;
   };
 }
+# Shows: "Layer activated: Navigation"
+#        "h→left_arrow | j→down_arrow | k→up_arrow | l→right_arrow"
 
 # Debug individual keys
 debugKey {

@@ -73,10 +73,10 @@ utils.debugKey {
 Add debugging to layer keys to see when they're activated:
 
 ```nix
-utils.debugLayerKey {
+utils.layerKey {
   key = "spacebar";
   layer_name = "Navigation";
-  enable_debug = false; # Set to true to enable
+  enable_debug = true; # Set to true to enable
   mappings = {
     h = keyCodes.left_arrow;
     j = keyCodes.down_arrow;
@@ -84,6 +84,12 @@ utils.debugLayerKey {
     l = keyCodes.right_arrow;
   };
 }
+```
+
+When enabled, this will show a notification like:
+```
+Layer activated: Navigation
+h→left_arrow | j→down_arrow | k→up_arrow | l→right_arrow
 ```
 
 ## Configuration Philosophy
@@ -103,7 +109,7 @@ To enable debugging, explicitly set `enable_debug = true` in your configuration.
 
 ```nix
 # Enable debugging for a specific layer
-utils.debugLayerKey {
+utils.layerKey {
   key = "tab";
   layer_name = "Window Management";
   enable_debug = true; # Enable to see layer state
@@ -112,6 +118,12 @@ utils.debugLayerKey {
     "2" = utils.raycastWindow "right-half";
   };
 }
+```
+
+This will display:
+```
+Layer activated: Window Management
+1→action | 2→action
 ```
 
 ### 2. Understanding Key Behavior
@@ -198,7 +210,7 @@ Structure your code to easily toggle debugging:
 let
   debug_enabled = false; # Change to true for debugging
 in
-utils.debugLayerKey {
+utils.layerKey {
   # ... layer configuration ...
   enable_debug = debug_enabled;
 }

@@ -31,7 +31,6 @@ in {
     layerKey
     appLayerKey
     sublayerKey
-    debugLayerKey
     appCondition
     deviceCondition
     keyboardTypeCondition

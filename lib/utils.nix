@@ -18,6 +18,8 @@ in rec {
     modifiers ? ["left_command" "left_control" "left_option" "left_shift"],
     alone_key ? null,
     held_key ? null,
+    layer_name ? key,
+    enable_debug ? false, # Disabled by default
   }: let
     # Create manipulators for each mapping
     hyperManipulators =
@@ -48,7 +50,7 @@ in rec {
       )
       mappings;
 
-    # Main hyper key manipulator
+    # Main hyper key manipulator with optional debug notifications
     hyperKeyManipulator = rules.mkManipulator {
       from = rules.mkFromEvent {key_code = key;};
       to = [
@@ -58,7 +60,16 @@ in rec {
             value = 1;
           };
         })
-      ];
+      ] ++ (if enable_debug then 
+        let
+          mappingsText = formatMappingsForNotification mappings;
+          notificationText = if mappingsText != ""
+            then "Hyper activated: ${layer_name}\n${mappingsText}"
+            else "Hyper activated: ${layer_name}";
+        in [
+          (showNotification "layer_hyper_mode" notificationText)
+        ]
+      else []);
       to_if_alone =
         if alone_key != null
         then [
@@ -78,8 +89,10 @@ in rec {
             value = 0;
           };
         })
-      ];
-      description = "Hyper key (${key})";
+      ] ++ (if enable_debug then [
+        (hideNotification "layer_hyper_mode")
+      ] else []);
+      description = if enable_debug then "Debug Hyper key (${key})" else "Hyper key (${key})";
     };
 
     # Add hyper_mode condition to all mappings
@@ -150,6 +163,8 @@ in rec {
     mappings,
     alone_key ? null,
     variable_name ? "${key}_layer",
+    layer_name ? key,
+    enable_debug ? false, # Disabled by default
   }: let
     # Helper function to parse trigger keys that may include modifiers
     # Supports syntax like "shift+m", "ctrl+shift+a", or just "m"
@@ -223,7 +238,7 @@ in rec {
       )
       mappings;
 
-    # Layer activation key
+    # Layer activation key with optional debug notifications
     layerKeyManipulator = rules.mkManipulator {
       from = rules.mkFromEvent {key_code = key;};
       to = [
@@ -233,7 +248,16 @@ in rec {
             value = 1;
           };
         })
-      ];
+      ] ++ (if enable_debug then 
+        let
+          mappingsText = formatMappingsForNotification mappings;
+          notificationText = if mappingsText != ""
+            then "Layer activated: ${layer_name}\n${mappingsText}"
+            else "Layer activated: ${layer_name}";
+        in [
+          (showNotification "layer_${variable_name}" notificationText)
+        ]
+      else []);
       to_if_alone =
         if alone_key != null
         then [
@@ -247,8 +271,10 @@ in rec {
             value = 0;
           };
         })
-      ];
-      description = "Layer key (${key})";
+      ] ++ (if enable_debug then [
+        (hideNotification "layer_${variable_name}")
+      ] else []);
+      description = if enable_debug then "Debug Layer key (${key})" else "Layer key (${key})";
     };
   in
     rules.mkRule "Layer: ${key}" ([layerKeyManipulator] ++ layerManipulators);
@@ -419,7 +445,9 @@ in rec {
     key,
     alone_key ? null,
     variable_name ? "${key}_app_layer",
+    layer_name ? key,
     app_mappings, # attrset where keys are app bundle IDs and values are mapping attrsets
+    enable_debug ? false, # Disabled by default
   }: let
     # Helper function to parse trigger keys that may include modifiers
     # Supports syntax like "shift+m", "ctrl+shift+a", or just "m"
@@ -497,7 +525,7 @@ in rec {
     # Create all manipulators for all apps
     allAppManipulators = flatten (mapAttrsToList createAppManipulators app_mappings);
 
-    # Layer activation key
+    # Layer activation key with optional debug notifications
     layerKeyManipulator = rules.mkManipulator {
       from = rules.mkFromEvent {key_code = key;};
       to = [
@@ -507,7 +535,16 @@ in rec {
             value = 1;
           };
         })
-      ];
+      ] ++ (if enable_debug then 
+        let
+          mappingsText = formatAppMappingsForNotification app_mappings;
+          notificationText = if mappingsText != ""
+            then "App Layer activated: ${layer_name}\n${mappingsText}"
+            else "App Layer activated: ${layer_name}";
+        in [
+          (showNotification "layer_${variable_name}" notificationText)
+        ]
+      else []);
       to_if_alone =
         if alone_key != null
         then [
@@ -521,8 +558,10 @@ in rec {
             value = 0;
           };
         })
-      ];
-      description = "App Layer key (${key})";
+      ] ++ (if enable_debug then [
+        (hideNotification "layer_${variable_name}")
+      ] else []);
+      description = if enable_debug then "Debug App Layer key (${key})" else "App Layer key (${key})";
     };
   in
     rules.mkRule "App Layer: ${key}" ([layerKeyManipulator] ++ allAppManipulators);
@@ -741,6 +780,81 @@ in rec {
   # Hide a notification message by setting text to empty string
   hideNotification = id: mkNotification {id = id; text = "";};
 
+  # Helper function to format mappings for debug notifications
+  formatMappingsForNotification = mappings: let
+    # Convert a target to a readable string
+    targetToString = target:
+      if isString target
+      then target
+      else if isList target
+      then concatStringsSep "+" target
+      else "action";
+    
+    # Format individual mapping
+    formatMapping = trigger: target: "${trigger}→${targetToString target}";
+    
+    # Get first few mappings (limit to avoid notification overflow)
+    mappingsList = mapAttrsToList formatMapping mappings;
+    limitedMappings = take 6 mappingsList;  # Show first 6 mappings
+    hasMore = length mappingsList > 6;
+    
+    mappingsText = concatStringsSep " | " limitedMappings;
+  in
+    if mappings == {}
+    then ""
+    else if hasMore
+    then "${mappingsText} | ..."
+    else mappingsText;
+
+  # Helper function to format app mappings for debug notifications
+  formatAppMappingsForNotification = app_mappings: let
+    # Format mappings for a single app
+    formatAppMappings = appId: mappings: 
+      let
+        appName = builtins.baseNameOf appId;  # Extract app name from bundle ID
+        mappingsText = formatMappingsForNotification mappings;
+      in
+        if mappingsText != ""
+        then "${appName}: ${mappingsText}"
+        else "${appName}: (no mappings)";
+    
+    # Get first few apps (limit to avoid notification overflow)
+    appsList = mapAttrsToList formatAppMappings app_mappings;
+    limitedApps = take 3 appsList;  # Show first 3 apps
+    hasMore = length appsList > 3;
+    
+    appsText = concatStringsSep "\n" limitedApps;
+  in
+    if app_mappings == {}
+    then ""
+    else if hasMore
+    then "${appsText}\n..."
+    else appsText;
+
+  # Helper function to format sublayers for debug notifications
+  formatSublayersForNotification = sublayers: let
+    # Format mappings for a single sublayer
+    formatSublayerMappings = sublayerKey: mappings: 
+      let
+        mappingsText = formatMappingsForNotification mappings;
+      in
+        if mappingsText != ""
+        then "${sublayerKey}: ${mappingsText}"
+        else "${sublayerKey}: (no mappings)";
+    
+    # Get first few sublayers (limit to avoid notification overflow)
+    sublayersList = mapAttrsToList formatSublayerMappings sublayers;
+    limitedSublayers = take 3 sublayersList;  # Show first 3 sublayers
+    hasMore = length sublayersList > 3;
+    
+    sublayersText = concatStringsSep "\n" limitedSublayers;
+  in
+    if sublayers == {}
+    then ""
+    else if hasMore
+    then "${sublayersText}\n..."
+    else sublayersText;
+
   # Create a debug notification wrapper for any key mapping
   # This will show a notification when a key is pressed and hide it when released
   # Useful for debugging layer activations or understanding key behavior
@@ -789,50 +903,6 @@ in rec {
         description = "Debug key: ${key} (${notification_text})";
       };
 
-  # Create a debug layer key that shows notifications for layer state
-  debugLayerKey = {
-    key,
-    mappings,
-    alone_key ? null,
-    variable_name ? "${key}_layer",
-    layer_name ? key,
-    enable_debug ? false, # Disabled by default
-  }:
-    if !enable_debug then
-      # If debugging is disabled, use the regular layerKey function
-      layerKey {
-        inherit key mappings alone_key variable_name;
-      }
-    else
-      # If debugging is enabled, add notifications for layer activation
-      let
-        notification_id = "layer_${variable_name}";
-        activate_text = "Layer activated: ${layer_name}";
-        deactivate_text = "";
-        
-        # Create the base layer
-        baseLayer = layerKey {
-          inherit key mappings alone_key variable_name;
-        };
-        
-        # Modify the layer key manipulator to include notifications
-        modifiedLayerKeyManipulator = 
-          let
-            originalManipulator = head baseLayer.manipulators;
-          in
-            originalManipulator // {
-              to = originalManipulator.to ++ [
-                (showNotification notification_id activate_text)
-              ];
-              to_after_key_up = originalManipulator.to_after_key_up ++ [
-                (hideNotification notification_id)
-              ];
-              description = "Debug ${originalManipulator.description}";
-            };
-      in
-        baseLayer // {
-          manipulators = [modifiedLayerKeyManipulator] ++ (tail baseLayer.manipulators);
-        };
 
   # This allows for hyper + sublayer + action patterns (e.g., hyper+o+w)
   sublayerKey = {
@@ -840,6 +910,8 @@ in rec {
     alone_key, # What to send if pressed alone
     variable_name, # Base variable name for the hyper key
     sublayers, # Nested sublayers: { "o" = { "w" = action; }; }
+    layer_name ? key,
+    enable_debug ? false, # Disabled by default
   }: let
     # Helper to convert action to toEvent
     actionToToEvent = action:
@@ -854,7 +926,7 @@ in rec {
         action
       else action;
 
-    # Create the main hyper key manipulator
+    # Create the main hyper key manipulator with optional debug notifications
     hyperKeyManipulator = rules.mkManipulator {
       from = rules.mkFromEvent {key_code = key;};
       to = [
@@ -864,7 +936,16 @@ in rec {
             value = 1;
           };
         })
-      ];
+      ] ++ (if enable_debug then 
+        let
+          mappingsText = formatSublayersForNotification sublayers;
+          notificationText = if mappingsText != ""
+            then "Sublayer activated: ${layer_name}\n${mappingsText}"
+            else "Sublayer activated: ${layer_name}";
+        in [
+          (showNotification "layer_${variable_name}" notificationText)
+        ]
+      else []);
       to_if_alone =
         if alone_key != null
         then [
@@ -878,8 +959,10 @@ in rec {
             value = 0;
           };
         })
-      ];
-      description = "Hyper Key (${key})";
+      ] ++ (if enable_debug then [
+        (hideNotification "layer_${variable_name}")
+      ] else []);
+      description = if enable_debug then "Debug Hyper Key (${key})" else "Hyper Key (${key})";
     };
 
     # Get all sublayer keys to create mutual exclusion conditions

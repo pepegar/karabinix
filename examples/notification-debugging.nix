@@ -46,16 +46,21 @@
         })
       ];
 
-      # Debug layer key example - DISABLED by default
-      debug-layer-example = utils.debugLayerKey {
+      # Debug layer key example - ENABLED to show mappings
+      debug-layer-example = utils.layerKey {
         key = "spacebar";
         layer_name = "Navigation";
-        enable_debug = false; # Set to true to enable debugging notifications
+        enable_debug = true; # Set to true to enable debugging notifications
         mappings = {
           h = keyCodes.left_arrow;
           j = keyCodes.down_arrow;
           k = keyCodes.up_arrow;
           l = keyCodes.right_arrow;
+          w = ["left_option" "right_arrow"];
+          b = ["left_option" "left_arrow"];
+          "0" = keyCodes.home;
+          "4" = keyCodes.end;
+          u = keyCodes.page_up;
         };
       };
 
@@ -76,7 +81,7 @@
       ];
 
       # Advanced example: Layer with debug notifications enabled
-      advanced-debug-layer = utils.debugLayerKey {
+      advanced-debug-layer = utils.layerKey {
         key = "right_command";
         alone_key = "right_command";
         layer_name = "Window Management";
