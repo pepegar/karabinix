@@ -86,6 +86,7 @@ with lib; rec {
     repeat ? true,
     halt ? false,
     hold_down_milliseconds ? null,
+    description ? null, # Human-readable description for debug notifications
   }:
     {}
     // (optionalAttrs (key_code != null) {inherit key_code;})

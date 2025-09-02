@@ -63,6 +63,11 @@
           u = keyCodes.page_up;
           "shift+g" = keyCodes.end;
           "cmd+a" = ["left_command" "a"];
+          c = {
+            shell_command = "open https://github.com";
+            description = "open GitHub";
+          };
+          t = utils.raycastWindow "maximize";
         };
       };
 

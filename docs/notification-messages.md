@@ -124,6 +124,43 @@ Debug notifications use symbolic representations for better readability:
 - `⎇→` = Option + Right Arrow
 - `⌃⇧a` = Control + Shift + A
 
+## Enhanced Descriptions
+
+You can add custom descriptions to your actions using the `description` parameter in `mkToEvent`:
+
+```nix
+utils.layerKey {
+  key = "spacebar";
+  enable_debug = true;
+  mappings = {
+    # Simple key mapping
+    h = keyCodes.left_arrow;
+    
+    # Complex action with description
+    w = rules.mkToEvent {
+      key_code = keyCodes.right_arrow;
+      modifiers = ["left_option"];
+      description = "word forward";  # 👈 Custom description
+    };
+    
+    # Shell command with description
+    g = {
+      shell_command = "open https://github.com";
+      description = "open GitHub";   # 👈 Custom description
+    };
+    
+    # Raycast actions automatically get descriptions
+    m = utils.raycastWindow "maximize";  # Shows as "m→maximize"
+  };
+}
+```
+
+This will display:
+```
+Layer activated: My Layer
+h→← | w→word forward | g→open GitHub | m→maximize
+```
+
 ## Configuration Philosophy
 
 All debugging features are **disabled by default** to ensure:
@@ -172,7 +209,7 @@ utils.vimNavigation {
 This will display all vim navigation mappings:
 ```
 Layer activated: Vim Mode
-h→← | j→↓ | k→↑ | l→→ | w→⎇→ | b→⎇← | ...
+h→← | j→↓ | k→↑ | l→→ | w→word forward | b→word back | ...
 ```
 
 ### 3. Understanding Key Behavior

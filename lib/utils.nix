@@ -53,23 +53,28 @@ in rec {
     # Main hyper key manipulator with optional debug notifications
     hyperKeyManipulator = rules.mkManipulator {
       from = rules.mkFromEvent {key_code = key;};
-      to = [
-        (rules.mkToEvent {
-          set_variable = {
-            name = "hyper_mode";
-            value = 1;
-          };
-        })
-      ] ++ (if enable_debug then 
-        let
-          mappingsText = formatMappingsForNotification mappings;
-          notificationText = if mappingsText != ""
-            then "Hyper activated: ${layer_name}\n${mappingsText}"
-            else "Hyper activated: ${layer_name}";
-        in [
-          (showNotification "layer_hyper_mode" notificationText)
+      to =
+        [
+          (rules.mkToEvent {
+            set_variable = {
+              name = "hyper_mode";
+              value = 1;
+            };
+          })
         ]
-      else []);
+        ++ (
+          if enable_debug
+          then let
+            mappingsText = formatMappingsForNotification mappings;
+            notificationText =
+              if mappingsText != ""
+              then "Hyper activated: ${layer_name}\n${mappingsText}"
+              else "Hyper activated: ${layer_name}";
+          in [
+            (showNotification "layer_hyper_mode" notificationText)
+          ]
+          else []
+        );
       to_if_alone =
         if alone_key != null
         then [
@@ -82,17 +87,26 @@ in rec {
           (rules.mkToEvent {key_code = held_key;})
         ]
         else [];
-      to_after_key_up = [
-        (rules.mkToEvent {
-          set_variable = {
-            name = "hyper_mode";
-            value = 0;
-          };
-        })
-      ] ++ (if enable_debug then [
-        (hideNotification "layer_hyper_mode")
-      ] else []);
-      description = if enable_debug then "Debug Hyper key (${key})" else "Hyper key (${key})";
+      to_after_key_up =
+        [
+          (rules.mkToEvent {
+            set_variable = {
+              name = "hyper_mode";
+              value = 0;
+            };
+          })
+        ]
+        ++ (
+          if enable_debug
+          then [
+            (hideNotification "layer_hyper_mode")
+          ]
+          else []
+        );
+      description =
+        if enable_debug
+        then "Debug Hyper key (${key})"
+        else "Hyper key (${key})";
     };
 
     # Add hyper_mode condition to all mappings
@@ -241,40 +255,54 @@ in rec {
     # Layer activation key with optional debug notifications
     layerKeyManipulator = rules.mkManipulator {
       from = rules.mkFromEvent {key_code = key;};
-      to = [
-        (rules.mkToEvent {
-          set_variable = {
-            name = variable_name;
-            value = 1;
-          };
-        })
-      ] ++ (if enable_debug then 
-        let
-          mappingsText = formatMappingsForNotification mappings;
-          notificationText = if mappingsText != ""
-            then "Layer activated: ${layer_name}\n${mappingsText}"
-            else "Layer activated: ${layer_name}";
-        in [
-          (showNotification "layer_${variable_name}" notificationText)
+      to =
+        [
+          (rules.mkToEvent {
+            set_variable = {
+              name = variable_name;
+              value = 1;
+            };
+          })
         ]
-      else []);
+        ++ (
+          if enable_debug
+          then let
+            mappingsText = formatMappingsForNotification mappings;
+            notificationText =
+              if mappingsText != ""
+              then "Layer activated: ${layer_name}\n${mappingsText}"
+              else "Layer activated: ${layer_name}";
+          in [
+            (showNotification "layer_${variable_name}" notificationText)
+          ]
+          else []
+        );
       to_if_alone =
         if alone_key != null
         then [
           (rules.mkToEvent {key_code = alone_key;})
         ]
         else [];
-      to_after_key_up = [
-        (rules.mkToEvent {
-          set_variable = {
-            name = variable_name;
-            value = 0;
-          };
-        })
-      ] ++ (if enable_debug then [
-        (hideNotification "layer_${variable_name}")
-      ] else []);
-      description = if enable_debug then "Debug Layer key (${key})" else "Layer key (${key})";
+      to_after_key_up =
+        [
+          (rules.mkToEvent {
+            set_variable = {
+              name = variable_name;
+              value = 0;
+            };
+          })
+        ]
+        ++ (
+          if enable_debug
+          then [
+            (hideNotification "layer_${variable_name}")
+          ]
+          else []
+        );
+      description =
+        if enable_debug
+        then "Debug Layer key (${key})"
+        else "Layer key (${key})";
     };
   in
     rules.mkRule "Layer: ${key}" ([layerKeyManipulator] ++ layerManipulators);
@@ -345,10 +373,12 @@ in rec {
         w = rules.mkToEvent {
           key_code = keyCodes.right_arrow;
           modifiers = ["left_option"];
+          description = "word forward";
         };
         b = rules.mkToEvent {
           key_code = keyCodes.left_arrow;
           modifiers = ["left_option"];
+          description = "word back";
         };
         "0" = keyCodes.home;
         "4" = keyCodes.end; # $ key
@@ -424,6 +454,7 @@ in rec {
   # Creates a shell command to trigger Raycast window management actions
   raycastWindow = name: {
     shell_command = "open -g raycast://extensions/raycast/window-management/${name}";
+    description = name;
   };
 
   # Quick text snippets
@@ -532,40 +563,54 @@ in rec {
     # Layer activation key with optional debug notifications
     layerKeyManipulator = rules.mkManipulator {
       from = rules.mkFromEvent {key_code = key;};
-      to = [
-        (rules.mkToEvent {
-          set_variable = {
-            name = variable_name;
-            value = 1;
-          };
-        })
-      ] ++ (if enable_debug then 
-        let
-          mappingsText = formatAppMappingsForNotification app_mappings;
-          notificationText = if mappingsText != ""
-            then "App Layer activated: ${layer_name}\n${mappingsText}"
-            else "App Layer activated: ${layer_name}";
-        in [
-          (showNotification "layer_${variable_name}" notificationText)
+      to =
+        [
+          (rules.mkToEvent {
+            set_variable = {
+              name = variable_name;
+              value = 1;
+            };
+          })
         ]
-      else []);
+        ++ (
+          if enable_debug
+          then let
+            mappingsText = formatAppMappingsForNotification app_mappings;
+            notificationText =
+              if mappingsText != ""
+              then "App Layer activated: ${layer_name}\n${mappingsText}"
+              else "App Layer activated: ${layer_name}";
+          in [
+            (showNotification "layer_${variable_name}" notificationText)
+          ]
+          else []
+        );
       to_if_alone =
         if alone_key != null
         then [
           (rules.mkToEvent {key_code = alone_key;})
         ]
         else [];
-      to_after_key_up = [
-        (rules.mkToEvent {
-          set_variable = {
-            name = variable_name;
-            value = 0;
-          };
-        })
-      ] ++ (if enable_debug then [
-        (hideNotification "layer_${variable_name}")
-      ] else []);
-      description = if enable_debug then "Debug App Layer key (${key})" else "App Layer key (${key})";
+      to_after_key_up =
+        [
+          (rules.mkToEvent {
+            set_variable = {
+              name = variable_name;
+              value = 0;
+            };
+          })
+        ]
+        ++ (
+          if enable_debug
+          then [
+            (hideNotification "layer_${variable_name}")
+          ]
+          else []
+        );
+      description =
+        if enable_debug
+        then "Debug App Layer key (${key})"
+        else "App Layer key (${key})";
     };
   in
     rules.mkRule "App Layer: ${key}" ([layerKeyManipulator] ++ allAppManipulators);
@@ -607,15 +652,19 @@ in rec {
   combinations = n: list: let
     # Generate combinations of size n from list
     combsHelper = n: list:
-      if n == 0 then [[]]
-      else if list == [] then []
+      if n == 0
+      then [[]]
+      else if list == []
+      then []
       else let
         first = head list;
         rest = tail list;
         withFirst = map (comb: [first] ++ comb) (combsHelper (n - 1) rest);
         withoutFirst = combsHelper n rest;
-      in withFirst ++ withoutFirst;
-  in combsHelper n list;
+      in
+        withFirst ++ withoutFirst;
+  in
+    combsHelper n list;
 
   # Helper function to get modifiers for a key combination
   # Returns the modifier keys that should be active when the combination is held
@@ -625,10 +674,11 @@ in rec {
     # Find the primary modifier (the one that appears in the combination)
     # For 2-key combinations, use the second key's modifier as primary
     # For 3+ key combinations, use a more complex logic
-    primaryMod = if length keys == 2 
+    primaryMod =
+      if length keys == 2
       then last modifiers
       else if length keys == 3
-      then elemAt modifiers 1  # Use middle key's modifier
+      then elemAt modifiers 1 # Use middle key's modifier
       else last modifiers; # For 4+ keys, use last
     # Get the other modifiers to include
     otherMods = filter (mod: mod != primaryMod) modifiers;
@@ -640,17 +690,17 @@ in rec {
   # Create combination home row mod manipulators
   homeRowModCombinations = keyMods: let
     keys = attrNames keyMods;
-    
+
     # Generate 2, 3, and 4-key combinations
     twoCombos = combinations 2 keys;
     threeCombos = combinations 3 keys;
     fourCombos = combinations 4 keys;
-    
+
     # Create manipulators for each combination size
     makeCombinationManipulator = keys: let
       comboMods = getCombinationModifiers keyMods keys;
       simultaneousKeys = map (key: {key_code = key;}) keys;
-      
+
       # For 2-key combinations, create both orders with strict key_down_order
       createStrictOrderManipulators = keys: let
         keyOrder1 = keys;
@@ -658,11 +708,13 @@ in rec {
         simultaneousKeys1 = map (key: {key_code = key;}) keyOrder1;
         simultaneousKeys2 = map (key: {key_code = key;}) keyOrder2;
         toIfAlone = map (key: {key_code = key;}) keys;
-        toIfHeld = [{
-          key_code = comboMods.primary;
-          modifiers = comboMods.others;
-        }];
-        
+        toIfHeld = [
+          {
+            key_code = comboMods.primary;
+            modifiers = comboMods.others;
+          }
+        ];
+
         baseManipulator = {
           from = rules.mkFromEvent {
             simultaneous = simultaneousKeys1;
@@ -672,42 +724,52 @@ in rec {
           to_if_held_down = toIfHeld;
           description = "Home row mod combination: ${concatStringsSep "+" keys}";
         };
-        
+
         # Create second manipulator with reversed order only if different
-        secondManipulator = if keyOrder1 != keyOrder2 then [{
-          from = rules.mkFromEvent {
-            simultaneous = simultaneousKeys2;
-            simultaneous_options = {key_down_order = "strict";};
-          };
-          to_if_alone = map (key: {key_code = key;}) keyOrder2;
-          to_if_held_down = toIfHeld;
-          description = "Home row mod combination: ${concatStringsSep "+" keyOrder2}";
-        }] else [];
-        
-      in [baseManipulator] ++ secondManipulator;
-      
+        secondManipulator =
+          if keyOrder1 != keyOrder2
+          then [
+            {
+              from = rules.mkFromEvent {
+                simultaneous = simultaneousKeys2;
+                simultaneous_options = {key_down_order = "strict";};
+              };
+              to_if_alone = map (key: {key_code = key;}) keyOrder2;
+              to_if_held_down = toIfHeld;
+              description = "Home row mod combination: ${concatStringsSep "+" keyOrder2}";
+            }
+          ]
+          else [];
+      in
+        [baseManipulator] ++ secondManipulator;
+
       # For 3+ key combinations, use non-strict order
-      createNonStrictManipulator = keys: [{
-        from = rules.mkFromEvent {
-          simultaneous = simultaneousKeys;
-        };
-        to_if_held_down = [{
-          key_code = comboMods.primary;
-          modifiers = comboMods.others;
-        }];
-        description = "Home row mod combination: ${concatStringsSep "+" keys}";
-      }];
-      
-    in if length keys == 2 
-       then createStrictOrderManipulators keys
-       else createNonStrictManipulator keys;
-    
+      createNonStrictManipulator = keys: [
+        {
+          from = rules.mkFromEvent {
+            simultaneous = simultaneousKeys;
+          };
+          to_if_held_down = [
+            {
+              key_code = comboMods.primary;
+              modifiers = comboMods.others;
+            }
+          ];
+          description = "Home row mod combination: ${concatStringsSep "+" keys}";
+        }
+      ];
+    in
+      if length keys == 2
+      then createStrictOrderManipulators keys
+      else createNonStrictManipulator keys;
+
     # Generate all combination manipulators
-    allCombinations = (map makeCombinationManipulator twoCombos) ++ 
-                     (map makeCombinationManipulator threeCombos) ++
-                     (map makeCombinationManipulator fourCombos);
-    
-  in flatten allCombinations;
+    allCombinations =
+      (map makeCombinationManipulator twoCombos)
+      ++ (map makeCombinationManipulator threeCombos)
+      ++ (map makeCombinationManipulator fourCombos);
+  in
+    flatten allCombinations;
 
   # Create multiple home row mods at once
   # Takes an attribute set where keys are the keys to modify and values are the modifiers
@@ -721,7 +783,7 @@ in rec {
       mods;
   in
     rules.mkRule "Home Row Mods" modList;
-  
+
   # Enhanced home row mods with combinations support
   homeRowModsWithCombinations = mods: let
     # Individual key manipulators
@@ -731,13 +793,12 @@ in rec {
           homeRowMod {inherit key modifier;}
       )
       mods;
-    
+
     # Combination manipulators
     combinationList = homeRowModCombinations mods;
-    
+
     # Combine all manipulators, with combinations first (higher priority)
     allManipulators = (map (manip: rules.mkManipulator manip) combinationList) ++ modList;
-    
   in
     rules.mkRule "Home Row Mods with Combinations" allManipulators;
 
@@ -782,7 +843,11 @@ in rec {
   showNotification = id: text: mkNotification {inherit id text;};
 
   # Hide a notification message by setting text to empty string
-  hideNotification = id: mkNotification {id = id; text = "";};
+  hideNotification = id:
+    mkNotification {
+      id = id;
+      text = "";
+    };
 
   # Helper function to translate modifier keys to symbols
   modifierToSymbol = modifier:
@@ -851,37 +916,49 @@ in rec {
         else "${concatStringsSep "" symbolModifiers}${symbolKey}"
       else if isAttrs target && target ? key_code
       then let
-        # Handle rules.mkToEvent structure
-        key = keyToSymbol target.key_code;
-        modifiers = target.modifiers or [];
-        symbolModifiers = map modifierToSymbol modifiers;
+        # Handle rules.mkToEvent structure - use description if available
+        description = target.description or null;
       in
-        if modifiers == []
-        then key
-        else "${concatStringsSep "" symbolModifiers}${key}"
+        if description != null
+        then description
+        else let
+          key = keyToSymbol target.key_code;
+          modifiers = target.modifiers or [];
+          symbolModifiers = map modifierToSymbol modifiers;
+        in
+          if modifiers == []
+          then key
+          else "${concatStringsSep "" symbolModifiers}${key}"
+      else if isAttrs target && target ? shell_command
+      then let
+        # Handle shell commands - use description if available
+        description = target.description or null;
+      in
+        if description != null
+        then description
+        else "shell"
       else "action";
-    
+
     # Format individual mapping with symbolic trigger
     formatMapping = trigger: target: let
       # Parse trigger for modifiers (e.g., "shift+m")
       triggerParts = splitString "+" trigger;
       triggerKey = last triggerParts;
       triggerModifiers = init triggerParts;
-      
-      formattedTrigger = 
+
+      formattedTrigger =
         if triggerModifiers == []
         then triggerKey
-        else "${concatStringsSep "" (map modifierToSymbol triggerModifiers)}${triggerKey}";
-      
+        else "${concatStringsSep "+" (map modifierToSymbol triggerModifiers)}${triggerKey}";
+
       formattedTarget = targetToString target;
-    in
-      "${formattedTrigger}→${formattedTarget}";
-    
+    in "${formattedTrigger}:${formattedTarget}";
+
     # Get first few mappings (limit to avoid notification overflow)
     mappingsList = mapAttrsToList formatMapping mappings;
-    limitedMappings = take 6 mappingsList;  # Show first 6 mappings
+    limitedMappings = take 6 mappingsList; # Show first 6 mappings
     hasMore = length mappingsList > 6;
-    
+
     mappingsText = concatStringsSep " | " limitedMappings;
   in
     if mappings == {}
@@ -893,20 +970,19 @@ in rec {
   # Helper function to format app mappings for debug notifications
   formatAppMappingsForNotification = app_mappings: let
     # Format mappings for a single app
-    formatAppMappings = appId: mappings: 
-      let
-        appName = builtins.baseNameOf appId;  # Extract app name from bundle ID
-        mappingsText = formatMappingsForNotification mappings;
-      in
-        if mappingsText != ""
-        then "${appName}: ${mappingsText}"
-        else "${appName}: (no mappings)";
-    
+    formatAppMappings = appId: mappings: let
+      appName = builtins.baseNameOf appId; # Extract app name from bundle ID
+      mappingsText = formatMappingsForNotification mappings;
+    in
+      if mappingsText != ""
+      then "${appName}: ${mappingsText}"
+      else "${appName}: (no mappings)";
+
     # Get first few apps (limit to avoid notification overflow)
     appsList = mapAttrsToList formatAppMappings app_mappings;
-    limitedApps = take 3 appsList;  # Show first 3 apps
+    limitedApps = take 3 appsList; # Show first 3 apps
     hasMore = length appsList > 3;
-    
+
     appsText = concatStringsSep "\n" limitedApps;
   in
     if app_mappings == {}
@@ -918,19 +994,18 @@ in rec {
   # Helper function to format sublayers for debug notifications
   formatSublayersForNotification = sublayers: let
     # Format mappings for a single sublayer
-    formatSublayerMappings = sublayerKey: mappings: 
-      let
-        mappingsText = formatMappingsForNotification mappings;
-      in
-        if mappingsText != ""
-        then "${sublayerKey}: ${mappingsText}"
-        else "${sublayerKey}: (no mappings)";
-    
+    formatSublayerMappings = sublayerKey: mappings: let
+      mappingsText = formatMappingsForNotification mappings;
+    in
+      if mappingsText != ""
+      then "${sublayerKey}: ${mappingsText}"
+      else "${sublayerKey}: (no mappings)";
+
     # Get first few sublayers (limit to avoid notification overflow)
     sublayersList = mapAttrsToList formatSublayerMappings sublayers;
-    limitedSublayers = take 3 sublayersList;  # Show first 3 sublayers
+    limitedSublayers = take 3 sublayersList; # Show first 3 sublayers
     hasMore = length sublayersList > 3;
-    
+
     sublayersText = concatStringsSep "\n" limitedSublayers;
   in
     if sublayers == {}
@@ -951,15 +1026,17 @@ in rec {
     conditions ? [],
     enable_debug ? false, # Disabled by default
   }:
-    if !enable_debug then
+    if !enable_debug
+    then
       # If debugging is disabled, return the original action or a simple key press
-      if action != null then
-        action
+      if action != null
+      then action
       else
         rules.mkManipulator {
           from = rules.mkFromEvent ({
-            key_code = key;
-          } // (optionalAttrs (modifiers != null) {inherit modifiers;}));
+              key_code = key;
+            }
+            // (optionalAttrs (modifiers != null) {inherit modifiers;}));
           to = [
             (rules.mkToEvent {key_code = key;})
           ];
@@ -970,23 +1047,29 @@ in rec {
       # If debugging is enabled, wrap with notifications
       rules.mkManipulator {
         from = rules.mkFromEvent ({
-          key_code = key;
-        } // (optionalAttrs (modifiers != null) {inherit modifiers;}));
-        to = [
-          (showNotification notification_id notification_text)
-        ] ++ (if action != null then
-          if isList action then action
-          else [action]
-        else [
-          (rules.mkToEvent {key_code = key;})
-        ]);
+            key_code = key;
+          }
+          // (optionalAttrs (modifiers != null) {inherit modifiers;}));
+        to =
+          [
+            (showNotification notification_id notification_text)
+          ]
+          ++ (
+            if action != null
+            then
+              if isList action
+              then action
+              else [action]
+            else [
+              (rules.mkToEvent {key_code = key;})
+            ]
+          );
         to_after_key_up = [
           (hideNotification notification_id)
         ];
         inherit conditions;
         description = "Debug key: ${key} (${notification_text})";
       };
-
 
   # This allows for hyper + sublayer + action patterns (e.g., hyper+o+w)
   sublayerKey = {
@@ -1013,40 +1096,54 @@ in rec {
     # Create the main hyper key manipulator with optional debug notifications
     hyperKeyManipulator = rules.mkManipulator {
       from = rules.mkFromEvent {key_code = key;};
-      to = [
-        (rules.mkToEvent {
-          set_variable = {
-            name = variable_name;
-            value = 1;
-          };
-        })
-      ] ++ (if enable_debug then 
-        let
-          mappingsText = formatSublayersForNotification sublayers;
-          notificationText = if mappingsText != ""
-            then "Sublayer activated: ${layer_name}\n${mappingsText}"
-            else "Sublayer activated: ${layer_name}";
-        in [
-          (showNotification "layer_${variable_name}" notificationText)
+      to =
+        [
+          (rules.mkToEvent {
+            set_variable = {
+              name = variable_name;
+              value = 1;
+            };
+          })
         ]
-      else []);
+        ++ (
+          if enable_debug
+          then let
+            mappingsText = formatSublayersForNotification sublayers;
+            notificationText =
+              if mappingsText != ""
+              then "Sublayer activated: ${layer_name}\n${mappingsText}"
+              else "Sublayer activated: ${layer_name}";
+          in [
+            (showNotification "layer_${variable_name}" notificationText)
+          ]
+          else []
+        );
       to_if_alone =
         if alone_key != null
         then [
           (rules.mkToEvent {key_code = alone_key;})
         ]
         else [];
-      to_after_key_up = [
-        (rules.mkToEvent {
-          set_variable = {
-            name = variable_name;
-            value = 0;
-          };
-        })
-      ] ++ (if enable_debug then [
-        (hideNotification "layer_${variable_name}")
-      ] else []);
-      description = if enable_debug then "Debug Hyper Key (${key})" else "Hyper Key (${key})";
+      to_after_key_up =
+        [
+          (rules.mkToEvent {
+            set_variable = {
+              name = variable_name;
+              value = 0;
+            };
+          })
+        ]
+        ++ (
+          if enable_debug
+          then [
+            (hideNotification "layer_${variable_name}")
+          ]
+          else []
+        );
+      description =
+        if enable_debug
+        then "Debug Hyper Key (${key})"
+        else "Hyper Key (${key})";
     };
 
     # Get all sublayer keys to create mutual exclusion conditions

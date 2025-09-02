@@ -328,8 +328,9 @@ layerKey {
 vimNavigation {
   layer_key = keyCodes.caps_lock;
   layer_name = "Vim Mode";
-  enable_debug = true; # Shows all vim navigation mappings
+  enable_debug = true; # Shows all vim navigation mappings with descriptions
 }
+# Shows: "h→← | j→↓ | k→↑ | l→→ | w→word forward | b→word back | ..."
 
 # Debug individual keys
 debugKey {
