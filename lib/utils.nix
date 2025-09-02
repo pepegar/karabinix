@@ -327,11 +327,15 @@ in rec {
   vimNavigation = {
     layer_key,
     variable_name ? "vim_mode",
+    layer_name ? "Vim Navigation",
+    enable_debug ? false, # Disabled by default
   }: let
     # Basic vim navigation mappings
     basicVimLayer = layerKey {
       key = layer_key;
       variable_name = variable_name;
+      layer_name = layer_name;
+      enable_debug = enable_debug;
       alone_key = layer_key;
       mappings = {
         h = keyCodes.left_arrow;

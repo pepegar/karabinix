@@ -324,6 +324,13 @@ layerKey {
 # Shows: "Layer activated: Navigation"
 #        "h→left_arrow | j→down_arrow | k→up_arrow | l→right_arrow"
 
+# Debug vim navigation layer
+vimNavigation {
+  layer_key = keyCodes.caps_lock;
+  layer_name = "Vim Mode";
+  enable_debug = true; # Shows all vim navigation mappings
+}
+
 # Debug individual keys
 debugKey {
   key = keyCodes.caps_lock;

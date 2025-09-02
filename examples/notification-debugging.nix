@@ -95,6 +95,13 @@
         };
       };
 
+      # Debug vim navigation example
+      debug-vim-navigation = utils.vimNavigation {
+        layer_key = "caps_lock";
+        layer_name = "Vim Mode";
+        enable_debug = true; # Enable to see vim mappings
+      };
+
       # Manual notification control example
       manual-notifications = utils.mkRule "Manual Notification Control" [
         # Toggle a persistent notification

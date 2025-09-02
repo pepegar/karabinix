@@ -126,7 +126,24 @@ Layer activated: Window Management
 1→action | 2→action
 ```
 
-### 2. Understanding Key Behavior
+### 2. Debugging Vim Navigation
+
+```nix
+# Enable debugging for vim navigation layer
+utils.vimNavigation {
+  layer_key = "caps_lock";
+  layer_name = "Vim Mode";
+  enable_debug = true; # Enable to see vim mappings
+}
+```
+
+This will display all vim navigation mappings:
+```
+Layer activated: Vim Mode
+h→left_arrow | j→down_arrow | k→up_arrow | l→right_arrow | w→action | b→action | ...
+```
+
+### 3. Understanding Key Behavior
 
 ```nix
 # Debug individual keys to understand their behavior
