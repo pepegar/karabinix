@@ -10,6 +10,7 @@ Inspired by [@mxstbr's TypeScript-based Karabiner configuration](https://github.
 - **Composable**: Reusable functions for common patterns (hyper keys, layers, vim navigation)
 - **Home Manager Integration**: Seamless integration with home-manager
 - **Rich DSL**: High-level functions for complex modifications, simultaneous keys, and more
+- **Debugging Support**: Optional notification messages for debugging layer activations and key behavior
 - **Template System**: Get started quickly with pre-built templates
 
 ## 🚀 Quick Start
@@ -220,6 +221,26 @@ homeRowMods {
 }
 ```
 
+#### `homeRowModsWithCombinations`
+Creates home row mods with support for key combinations. This generates both individual key mappings and combination mappings.
+
+```nix
+homeRowModsWithCombinations {
+  a = keyCodes.left_shift;
+  s = keyCodes.left_control;
+  d = keyCodes.left_option;
+  f = keyCodes.left_command;
+}
+```
+
+This creates:
+- Individual mappings: A=Shift, S=Control, D=Option, F=Command
+- 2-key combinations: A+S=Shift+Control, S+D=Control+Option, D+F=Option+Command, etc.
+- 3-key combinations: A+S+D, S+D+F, etc.
+- 4-key combination: A+S+D+F (all modifiers)
+
+Combinations use `simultaneous` key detection with strict order for 2-key combos and flexible order for 3+ key combos.
+
 #### Pre-built Home Row Mod Configurations
 
 **`standardHomeRowMods`** - Standard QWERTY layout:
@@ -282,6 +303,41 @@ modifiers.ctrl   # [ "left_control" ]
 modifiers.hyper  # [ "left_command" "left_control" "left_option" "left_shift" ]
 modifiers.meh    # [ "left_control" "left_option" "left_shift" ]
 ```
+
+### Debugging and Notifications
+
+Karabinix includes optional notification support for debugging configurations:
+
+```nix
+# Debug a layer key (disabled by default)
+debugLayerKey {
+  key = keyCodes.spacebar;
+  layer_name = "Navigation";
+  enable_debug = false; # Set to true to enable notifications
+  mappings = {
+    h = keyCodes.left_arrow;
+    j = keyCodes.down_arrow;
+    k = keyCodes.up_arrow;
+    l = keyCodes.right_arrow;
+  };
+}
+
+# Debug individual keys
+debugKey {
+  key = keyCodes.caps_lock;
+  action = mkToEvent { key_code = keyCodes.escape; };
+  notification_text = "Caps -> Esc";
+  enable_debug = false; # Set to true to enable notifications
+}
+
+# Manual notification control
+showNotification "status" "Debug mode active"
+hideNotification "status"
+```
+
+All debugging features are **disabled by default** to ensure clean, production-ready configurations. Enable them by setting `enable_debug = true` when needed.
+
+See the [notification documentation](./docs/notification-messages.md) for detailed usage.
 
 ## 🎯 Common Patterns
 
@@ -457,6 +513,7 @@ Check out the [examples directory](./examples/) for complete configuration examp
 - [`basic.nix`](./examples/basic.nix) - Simple key remappings and basic modifications
 - [`advanced.nix`](./examples/advanced.nix) - Complex modifications, hyper keys, and layers
 - [`home-manager.nix`](./examples/home-manager.nix) - Home Manager integration example
+- [`notification-debugging.nix`](./examples/notification-debugging.nix) - Debugging with notification messages
 
 ## 🤝 Acknowledgments
 

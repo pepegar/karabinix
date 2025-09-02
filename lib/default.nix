@@ -43,6 +43,7 @@ in {
     textSnippets
     homeRowMod
     homeRowMods
+    homeRowModsWithCombinations
     standardHomeRowMods
     altHomeRowMods
     ;

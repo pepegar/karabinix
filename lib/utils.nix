@@ -560,8 +560,115 @@ in rec {
         else "${key}: ${modifier} when held, ${key} when tapped";
     };
 
+  # Helper function to generate combinations of keys
+  combinations = n: list: let
+    # Generate combinations of size n from list
+    combsHelper = n: list:
+      if n == 0 then [[]]
+      else if list == [] then []
+      else let
+        first = head list;
+        rest = tail list;
+        withFirst = map (comb: [first] ++ comb) (combsHelper (n - 1) rest);
+        withoutFirst = combsHelper n rest;
+      in withFirst ++ withoutFirst;
+  in combsHelper n list;
+
+  # Helper function to get modifiers for a key combination
+  # Returns the modifier keys that should be active when the combination is held
+  getCombinationModifiers = keyMods: keys: let
+    # Get the modifiers for the given keys
+    modifiers = map (key: keyMods.${key}) keys;
+    # Find the primary modifier (the one that appears in the combination)
+    # For 2-key combinations, use the second key's modifier as primary
+    # For 3+ key combinations, use a more complex logic
+    primaryMod = if length keys == 2 
+      then last modifiers
+      else if length keys == 3
+      then elemAt modifiers 1  # Use middle key's modifier
+      else last modifiers; # For 4+ keys, use last
+    # Get the other modifiers to include
+    otherMods = filter (mod: mod != primaryMod) modifiers;
+  in {
+    primary = primaryMod;
+    others = otherMods;
+  };
+
+  # Create combination home row mod manipulators
+  homeRowModCombinations = keyMods: let
+    keys = attrNames keyMods;
+    
+    # Generate 2, 3, and 4-key combinations
+    twoCombos = combinations 2 keys;
+    threeCombos = combinations 3 keys;
+    fourCombos = combinations 4 keys;
+    
+    # Create manipulators for each combination size
+    makeCombinationManipulator = keys: let
+      comboMods = getCombinationModifiers keyMods keys;
+      simultaneousKeys = map (key: {key_code = key;}) keys;
+      
+      # For 2-key combinations, create both orders with strict key_down_order
+      createStrictOrderManipulators = keys: let
+        keyOrder1 = keys;
+        keyOrder2 = reverseList keys;
+        simultaneousKeys1 = map (key: {key_code = key;}) keyOrder1;
+        simultaneousKeys2 = map (key: {key_code = key;}) keyOrder2;
+        toIfAlone = map (key: {key_code = key;}) keys;
+        toIfHeld = [{
+          key_code = comboMods.primary;
+          modifiers = comboMods.others;
+        }];
+        
+        baseManipulator = {
+          from = rules.mkFromEvent {
+            simultaneous = simultaneousKeys1;
+            simultaneous_options = {key_down_order = "strict";};
+          };
+          to_if_alone = toIfAlone;
+          to_if_held_down = toIfHeld;
+          description = "Home row mod combination: ${concatStringsSep "+" keys}";
+        };
+        
+        # Create second manipulator with reversed order only if different
+        secondManipulator = if keyOrder1 != keyOrder2 then [{
+          from = rules.mkFromEvent {
+            simultaneous = simultaneousKeys2;
+            simultaneous_options = {key_down_order = "strict";};
+          };
+          to_if_alone = map (key: {key_code = key;}) keyOrder2;
+          to_if_held_down = toIfHeld;
+          description = "Home row mod combination: ${concatStringsSep "+" keyOrder2}";
+        }] else [];
+        
+      in [baseManipulator] ++ secondManipulator;
+      
+      # For 3+ key combinations, use non-strict order
+      createNonStrictManipulator = keys: [{
+        from = rules.mkFromEvent {
+          simultaneous = simultaneousKeys;
+        };
+        to_if_held_down = [{
+          key_code = comboMods.primary;
+          modifiers = comboMods.others;
+        }];
+        description = "Home row mod combination: ${concatStringsSep "+" keys}";
+      }];
+      
+    in if length keys == 2 
+       then createStrictOrderManipulators keys
+       else createNonStrictManipulator keys;
+    
+    # Generate all combination manipulators
+    allCombinations = (map makeCombinationManipulator twoCombos) ++ 
+                     (map makeCombinationManipulator threeCombos) ++
+                     (map makeCombinationManipulator fourCombos);
+    
+  in flatten allCombinations;
+
   # Create multiple home row mods at once
   # Takes an attribute set where keys are the keys to modify and values are the modifiers
+  # Now supports an optional 'combinations' parameter to enable key combinations
   homeRowMods = mods: let
     modList =
       mapAttrsToList (
@@ -571,6 +678,25 @@ in rec {
       mods;
   in
     rules.mkRule "Home Row Mods" modList;
+  
+  # Enhanced home row mods with combinations support
+  homeRowModsWithCombinations = mods: let
+    # Individual key manipulators
+    modList =
+      mapAttrsToList (
+        key: modifier:
+          homeRowMod {inherit key modifier;}
+      )
+      mods;
+    
+    # Combination manipulators
+    combinationList = homeRowModCombinations mods;
+    
+    # Combine all manipulators, with combinations first (higher priority)
+    allManipulators = (map (manip: rules.mkManipulator manip) combinationList) ++ modList;
+    
+  in
+    rules.mkRule "Home Row Mods with Combinations" allManipulators;
 
   # Predefined common home row mod configurations
   # Standard QWERTY home row mods (ASDF / JKL;)
@@ -596,6 +722,117 @@ in rec {
     l = keyCodes.right_option;
     semicolon = keyCodes.right_control;
   };
+
+  # Notification message utilities
+  # Create a notification message event
+  mkNotification = {
+    id,
+    text,
+  }:
+    rules.mkToEvent {
+      set_notification_message = {
+        inherit id text;
+      };
+    };
+
+  # Show a notification message
+  showNotification = id: text: mkNotification {inherit id text;};
+
+  # Hide a notification message by setting text to empty string
+  hideNotification = id: mkNotification {id = id; text = "";};
+
+  # Create a debug notification wrapper for any key mapping
+  # This will show a notification when a key is pressed and hide it when released
+  # Useful for debugging layer activations or understanding key behavior
+  debugKey = {
+    key,
+    action ? null, # The actual action to perform (optional)
+    notification_id ? "debug_${key}",
+    notification_text ? "Key pressed: ${key}",
+    modifiers ? null,
+    conditions ? [],
+    enable_debug ? false, # Disabled by default
+  }:
+    if !enable_debug then
+      # If debugging is disabled, return the original action or a simple key press
+      if action != null then
+        action
+      else
+        rules.mkManipulator {
+          from = rules.mkFromEvent ({
+            key_code = key;
+          } // (optionalAttrs (modifiers != null) {inherit modifiers;}));
+          to = [
+            (rules.mkToEvent {key_code = key;})
+          ];
+          inherit conditions;
+          description = "Key: ${key}";
+        }
+    else
+      # If debugging is enabled, wrap with notifications
+      rules.mkManipulator {
+        from = rules.mkFromEvent ({
+          key_code = key;
+        } // (optionalAttrs (modifiers != null) {inherit modifiers;}));
+        to = [
+          (showNotification notification_id notification_text)
+        ] ++ (if action != null then
+          if isList action then action
+          else [action]
+        else [
+          (rules.mkToEvent {key_code = key;})
+        ]);
+        to_after_key_up = [
+          (hideNotification notification_id)
+        ];
+        inherit conditions;
+        description = "Debug key: ${key} (${notification_text})";
+      };
+
+  # Create a debug layer key that shows notifications for layer state
+  debugLayerKey = {
+    key,
+    mappings,
+    alone_key ? null,
+    variable_name ? "${key}_layer",
+    layer_name ? key,
+    enable_debug ? false, # Disabled by default
+  }:
+    if !enable_debug then
+      # If debugging is disabled, use the regular layerKey function
+      layerKey {
+        inherit key mappings alone_key variable_name;
+      }
+    else
+      # If debugging is enabled, add notifications for layer activation
+      let
+        notification_id = "layer_${variable_name}";
+        activate_text = "Layer activated: ${layer_name}";
+        deactivate_text = "";
+        
+        # Create the base layer
+        baseLayer = layerKey {
+          inherit key mappings alone_key variable_name;
+        };
+        
+        # Modify the layer key manipulator to include notifications
+        modifiedLayerKeyManipulator = 
+          let
+            originalManipulator = head baseLayer.manipulators;
+          in
+            originalManipulator // {
+              to = originalManipulator.to ++ [
+                (showNotification notification_id activate_text)
+              ];
+              to_after_key_up = originalManipulator.to_after_key_up ++ [
+                (hideNotification notification_id)
+              ];
+              description = "Debug ${originalManipulator.description}";
+            };
+      in
+        baseLayer // {
+          manipulators = [modifiedLayerKeyManipulator] ++ (tail baseLayer.manipulators);
+        };
 
   # This allows for hyper + sublayer + action patterns (e.g., hyper+o+w)
   sublayerKey = {

@@ -80,6 +80,7 @@ with lib; rec {
     shell_command ? null,
     select_input_source ? null,
     set_variable ? null,
+    set_notification_message ? null,
     modifiers ? [],
     lazy ? false,
     repeat ? true,
@@ -93,6 +94,7 @@ with lib; rec {
     // (optionalAttrs (shell_command != null) {inherit shell_command;})
     // (optionalAttrs (select_input_source != null) {inherit select_input_source;})
     // (optionalAttrs (set_variable != null) {inherit set_variable;})
+    // (optionalAttrs (set_notification_message != null) {inherit set_notification_message;})
     // (optionalAttrs (modifiers != []) {inherit modifiers;})
     // (optionalAttrs lazy {inherit lazy;})
     // (optionalAttrs (!repeat) {inherit repeat;})

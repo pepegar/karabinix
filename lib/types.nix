@@ -178,6 +178,23 @@ with lib; rec {
         description = "Set a variable";
       };
 
+      set_notification_message = mkOption {
+        type = types.nullOr (types.submodule {
+          options = {
+            id = mkOption {
+              type = types.str;
+              description = "Unique identifier for the notification message";
+            };
+            text = mkOption {
+              type = types.str;
+              description = "Message body (empty string to remove the notification)";
+            };
+          };
+        });
+        default = null;
+        description = "Set or remove a notification message";
+      };
+
       modifiers = mkOption {
         type = types.listOf modifier;
         default = [];

@@ -5,7 +5,7 @@
 
 let
   karabinix = import ../lib { inherit lib; };
-  inherit (karabinix) keyCodes homeRowMod homeRowMods standardHomeRowMods altHomeRowMods;
+  inherit (karabinix) keyCodes homeRowMod homeRowMods homeRowModsWithCombinations standardHomeRowMods altHomeRowMods;
 in
 
 {
@@ -77,5 +77,37 @@ in
     e = keyCodes.right_control;
     i = keyCodes.right_option;
     o = keyCodes.right_shift;
+  };
+
+  # Example 8: Home row mods with combinations enabled
+  # This creates individual key mods PLUS combination mods
+  # For example: holding A+S gives Shift+Control, holding S+D gives Control+Option, etc.
+  example8_with_combinations = homeRowModsWithCombinations {
+    a = keyCodes.left_shift;
+    s = keyCodes.left_control;
+    d = keyCodes.left_option;
+    f = keyCodes.left_command;
+    j = keyCodes.right_command;
+    k = keyCodes.right_option;
+    l = keyCodes.right_control;
+    semicolon = keyCodes.right_shift;
+  };
+
+  # Example 9: Minimal combination setup (just the core 4 keys)
+  # This creates combinations like:
+  # - S+D = Control+Option
+  # - D+F = Option+Command  
+  # - J+K = Command+Option
+  # - K+L = Option+Control
+  # - S+D+F = Control+Option+Command (3-key combo)
+  # - J+K+L = Command+Option+Control (3-key combo)
+  # - S+D+F+J = all modifiers (4-key combo)
+  example9_minimal_combinations = homeRowModsWithCombinations {
+    s = keyCodes.left_control;
+    d = keyCodes.left_option;
+    f = keyCodes.left_command;
+    j = keyCodes.right_command;
+    k = keyCodes.right_option;
+    l = keyCodes.right_control;
   };
 }
