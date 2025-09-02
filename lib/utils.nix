@@ -306,6 +306,7 @@ in rec {
     basicVimLayer = layerKey {
       key = layer_key;
       variable_name = variable_name;
+      alone_key = layer_key;
       mappings = {
         h = keyCodes.left_arrow;
         j = keyCodes.down_arrow;
