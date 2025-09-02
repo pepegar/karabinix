@@ -322,7 +322,7 @@ layerKey {
   };
 }
 # Shows: "Layer activated: Navigation"
-#        "h→left_arrow | j→down_arrow | k→up_arrow | l→right_arrow"
+#        "h→← | j→↓ | k→↑ | l→→"
 
 # Debug vim navigation layer
 vimNavigation {

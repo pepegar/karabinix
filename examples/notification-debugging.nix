@@ -61,6 +61,8 @@
           "0" = keyCodes.home;
           "4" = keyCodes.end;
           u = keyCodes.page_up;
+          "shift+g" = keyCodes.end;
+          "cmd+a" = ["left_command" "a"];
         };
       };
 

@@ -89,8 +89,40 @@ utils.layerKey {
 When enabled, this will show a notification like:
 ```
 Layer activated: Navigation
-h→left_arrow | j→down_arrow | k→up_arrow | l→right_arrow
+h→← | j→↓ | k→↑ | l→→
 ```
+
+## Symbol Reference
+
+Debug notifications use symbolic representations for better readability:
+
+### Modifier Keys
+- **⌘** Command (cmd)
+- **⌃** Control (ctrl) 
+- **⎇** Option (alt)
+- **⇧** Shift
+- **◆** Hyper (all modifiers)
+
+### Common Keys
+- **←** Left arrow
+- **→** Right arrow  
+- **↑** Up arrow
+- **↓** Down arrow
+- **↩** Return/Enter
+- **⇥** Tab
+- **⇪** Caps Lock
+- **⌫** Delete/Backspace
+- **⌦** Forward Delete
+- **⇞** Page Up
+- **⇟** Page Down
+- **↖** Home
+- **↘** End
+
+### Examples
+- `⇧m` = Shift + M
+- `⌘c` = Command + C
+- `⎇→` = Option + Right Arrow
+- `⌃⇧a` = Control + Shift + A
 
 ## Configuration Philosophy
 
@@ -140,7 +172,7 @@ utils.vimNavigation {
 This will display all vim navigation mappings:
 ```
 Layer activated: Vim Mode
-h→left_arrow | j→down_arrow | k→up_arrow | l→right_arrow | w→action | b→action | ...
+h→← | j→↓ | k→↑ | l→→ | w→⎇→ | b→⎇← | ...
 ```
 
 ### 3. Understanding Key Behavior

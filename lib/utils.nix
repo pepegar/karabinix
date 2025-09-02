@@ -784,18 +784,98 @@ in rec {
   # Hide a notification message by setting text to empty string
   hideNotification = id: mkNotification {id = id; text = "";};
 
+  # Helper function to translate modifier keys to symbols
+  modifierToSymbol = modifier:
+    if modifier == "left_command" || modifier == "right_command" || modifier == "command"
+    then "⌘"
+    else if modifier == "left_control" || modifier == "right_control" || modifier == "control"
+    then "⌃"
+    else if modifier == "left_option" || modifier == "right_option" || modifier == "option"
+    then "⎇"
+    else if modifier == "left_shift" || modifier == "right_shift" || modifier == "shift"
+    then "⇧"
+    else if modifier == "hyper"
+    then "◆"
+    else modifier; # Fallback to original if unknown
+
+  # Helper function to translate key names to more readable symbols
+  keyToSymbol = key:
+    if key == "left_arrow"
+    then "←"
+    else if key == "right_arrow"
+    then "→"
+    else if key == "up_arrow"
+    then "↑"
+    else if key == "down_arrow"
+    then "↓"
+    else if key == "spacebar"
+    then "space"
+    else if key == "return_or_enter"
+    then "↩"
+    else if key == "escape"
+    then "esc"
+    else if key == "delete_or_backspace"
+    then "⌫"
+    else if key == "delete_forward"
+    then "⌦"
+    else if key == "tab"
+    then "⇥"
+    else if key == "caps_lock"
+    then "⇪"
+    else if key == "home"
+    then "↖"
+    else if key == "end"
+    then "↘"
+    else if key == "page_up"
+    then "⇞"
+    else if key == "page_down"
+    then "⇟"
+    else key; # Fallback to original key name
+
   # Helper function to format mappings for debug notifications
   formatMappingsForNotification = mappings: let
-    # Convert a target to a readable string
+    # Convert a target to a readable string with symbols
     targetToString = target:
       if isString target
-      then target
+      then keyToSymbol target
       else if isList target
-      then concatStringsSep "+" target
+      then let
+        # Separate modifiers from the main key
+        modifiers = init target;
+        mainKey = last target;
+        symbolModifiers = map modifierToSymbol modifiers;
+        symbolKey = keyToSymbol mainKey;
+      in
+        if modifiers == []
+        then symbolKey
+        else "${concatStringsSep "" symbolModifiers}${symbolKey}"
+      else if isAttrs target && target ? key_code
+      then let
+        # Handle rules.mkToEvent structure
+        key = keyToSymbol target.key_code;
+        modifiers = target.modifiers or [];
+        symbolModifiers = map modifierToSymbol modifiers;
+      in
+        if modifiers == []
+        then key
+        else "${concatStringsSep "" symbolModifiers}${key}"
       else "action";
     
-    # Format individual mapping
-    formatMapping = trigger: target: "${trigger}→${targetToString target}";
+    # Format individual mapping with symbolic trigger
+    formatMapping = trigger: target: let
+      # Parse trigger for modifiers (e.g., "shift+m")
+      triggerParts = splitString "+" trigger;
+      triggerKey = last triggerParts;
+      triggerModifiers = init triggerParts;
+      
+      formattedTrigger = 
+        if triggerModifiers == []
+        then triggerKey
+        else "${concatStringsSep "" (map modifierToSymbol triggerModifiers)}${triggerKey}";
+      
+      formattedTarget = targetToString target;
+    in
+      "${formattedTrigger}→${formattedTarget}";
     
     # Get first few mappings (limit to avoid notification overflow)
     mappingsList = mapAttrsToList formatMapping mappings;
