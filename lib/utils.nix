@@ -313,11 +313,11 @@ in rec {
         l = keyCodes.right_arrow;
         w = rules.mkToEvent {
           key_code = keyCodes.right_arrow;
-          modifiers = ["left_control"];
+          modifiers = ["left_option"];
         };
         b = rules.mkToEvent {
           key_code = keyCodes.left_arrow;
-          modifiers = ["left_control"];
+          modifiers = ["left_option"];
         };
         "0" = keyCodes.home;
         "4" = keyCodes.end; # $ key
