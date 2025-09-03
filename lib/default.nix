@@ -6,53 +6,24 @@ in {
   inherit types;
 
   # Core configuration generation
-  mkConfiguration = import ./config.nix {inherit lib types rules utils;};
+  mkConfiguration = import ./config.nix {inherit lib;};
 
   # Rule creation functions
   inherit
     (rules)
-    mkSimpleModification
     mkComplexModification
-    mkRule
-    mkManipulator
     mkProfile
-    mkFromEvent
     mkToEvent
-    mkModifiers
-    mkCondition
     ;
 
   # Utility functions
   inherit
     (utils)
-    mapKey
-    hyperKey
-    simultaneousKeys
     layerKey
     appLayerKey
-    sublayerKey
-    appCondition
-    deviceCondition
-    keyboardTypeCondition
-    variableCondition
     vimNavigation
     raycastWindow
-    mediaKeys
-    modifierRemaps
-    appLauncher
-    textSnippets
-    homeRowMod
-    homeRowMods
     homeRowModsWithCombinations
-    standardHomeRowMods
-    altHomeRowMods
-    wrapText
-    showNotification
-    hideNotification
-    mkNotification
-    formatMappingsForNotification
-    formatAppMappingsForNotification
-    formatSublayersForNotification
     ;
 
   # Key code constants

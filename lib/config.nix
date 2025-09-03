@@ -1,9 +1,4 @@
-{
-  lib,
-  types,
-  rules,
-  utils,
-}:
+{lib}:
 with lib;
 # Main function to create a Karabiner Elements configuration
   config: let
