@@ -94,6 +94,34 @@ Test generated configurations by:
 2. Running `nix flake show` to verify flake structure
 3. Testing home-manager integration with templates
 
+### Unit Testing
+
+The project includes comprehensive unit tests for all library functions:
+
+**Running Tests:**
+```bash
+# Run all tests
+nix flake check
+
+# Run specific test categories
+nix build .#checks.x86_64-linux.tests-unit-config      # Core config functions
+nix build .#checks.x86_64-linux.tests-unit-rules       # Rule creation functions  
+nix build .#checks.x86_64-linux.tests-unit-utils       # Utility functions
+nix build .#checks.x86_64-linux.tests-unit-mapping     # Key mapping functions
+nix build .#checks.x86_64-linux.tests-unit-conditions  # Condition functions
+nix build .#checks.x86_64-linux.tests-integration-home-manager  # Home Manager module
+nix build .#checks.x86_64-linux.tests-integration-complete     # End-to-end tests
+
+# Generate test report
+nix build .#checks.x86_64-linux.tests
+```
+
+**Test Structure:**
+- `tests/unit/` - Pure function unit tests using `lib.runTests`
+- `tests/integration/` - Integration tests for complete configurations
+- `tests/fixtures/` - Expected test outputs and sample data
+- `tests/default.nix` - Main test runner and reporter
+
 ## Integration Points
 
 ### Home Manager Module
