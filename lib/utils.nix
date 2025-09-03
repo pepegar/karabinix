@@ -68,8 +68,8 @@ in rec {
             mappingsText = formatMappingsForNotification mappings;
             notificationText =
               if mappingsText != ""
-              then "Hyper activated: ${layer_name}\n${mappingsText}"
-              else "Hyper activated: ${layer_name}";
+              then "hyper_mode\n${mappingsText}"
+              else "hyper_mode";
           in [
             (showNotification "layer_hyper_mode" notificationText)
           ]
@@ -270,8 +270,8 @@ in rec {
             mappingsText = formatMappingsForNotification mappings;
             notificationText =
               if mappingsText != ""
-              then "${layer_name}\n${mappingsText}"
-              else "${layer_name}";
+              then "${variable_name}\n${mappingsText}"
+              else "${variable_name}";
           in [
             (showNotification "layer_${variable_name}" notificationText)
           ]
@@ -575,8 +575,8 @@ in rec {
             mappingsText = formatAppMappingsForNotification app_mappings;
             notificationText =
               if mappingsText != ""
-              then "${layer_name}\n${mappingsText}"
-              else " ${layer_name}";
+              then "${variable_name}\n${mappingsText}"
+              else "${variable_name}";
           in [
             (showNotification "layer_${variable_name}" notificationText)
           ]
@@ -1169,8 +1169,8 @@ in rec {
             mappingsText = formatSublayersForNotification sublayers;
             notificationText =
               if mappingsText != ""
-              then "${layer_name}\n${mappingsText}"
-              else "${layer_name}";
+              then "${variable_name}\n${mappingsText}"
+              else "${variable_name}";
           in [
             (showNotification "layer_${variable_name}" notificationText)
           ]
