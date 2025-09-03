@@ -46,6 +46,13 @@ in {
     homeRowModsWithCombinations
     standardHomeRowMods
     altHomeRowMods
+    wrapText
+    showNotification
+    hideNotification
+    mkNotification
+    formatMappingsForNotification
+    formatAppMappingsForNotification
+    formatSublayersForNotification
     ;
 
   # Key code constants

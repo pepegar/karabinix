@@ -894,6 +894,56 @@ in rec {
     then "⇟"
     else key; # Fallback to original key name
 
+  # Helper function to wrap text to maximum width with proper line breaks
+  wrapText = {
+    text,
+    maxWidth ? 80,
+    separator ? " | ",
+    indent ? "",
+  }: let
+    # Split text into individual items
+    items = splitString separator text;
+
+    # Function to build lines respecting max width
+    buildLines = items: let
+      # Helper function to add items to lines
+      addToLines = lines: remainingItems:
+        if remainingItems == []
+        then lines
+        else let
+          currentItem = head remainingItems;
+          restItems = tail remainingItems;
+          currentLine =
+            if lines == []
+            then ""
+            else last lines;
+          otherLines =
+            if lines == []
+            then []
+            else init lines;
+
+          # Calculate the width if we add this item to current line
+          newLineContent =
+            if currentLine == ""
+            then "${indent}${currentItem}"
+            else "${currentLine}${separator}${currentItem}";
+
+          newLineWidth = stringLength newLineContent;
+        in
+          if newLineWidth <= maxWidth
+          then
+            # Item fits on current line
+            addToLines (otherLines ++ [newLineContent]) restItems
+          else
+            # Item doesn't fit, start new line
+            addToLines (lines ++ ["${indent}${currentItem}"]) restItems;
+    in
+      addToLines [] items;
+  in
+    if text == ""
+    then ""
+    else concatStringsSep "\n" (buildLines items);
+
   # Helper function to format mappings for debug notifications
   formatMappingsForNotification = mappings: let
     # Convert a target to a readable string with symbols
@@ -951,18 +1001,21 @@ in rec {
       formattedTarget = targetToString target;
     in "${formattedTrigger}:${formattedTarget}";
 
-    # Get first few mappings (limit to avoid notification overflow)
+    # Format all mappings without arbitrary limits
     mappingsList = mapAttrsToList formatMapping mappings;
-    limitedMappings = take 6 mappingsList; # Show first 6 mappings
-    hasMore = length mappingsList > 6;
 
-    mappingsText = concatStringsSep " | " limitedMappings;
+    # Join mappings with separator and wrap to 80 characters
+    allMappingsText = concatStringsSep " | " mappingsList;
+    wrappedMappingsText = wrapText {
+      text = allMappingsText;
+      maxWidth = 80;
+      separator = " | ";
+      indent = "";
+    };
   in
     if mappings == {}
     then ""
-    else if hasMore
-    then "${mappingsText} | ..."
-    else mappingsText;
+    else wrappedMappingsText;
 
   # Helper function to format app mappings for debug notifications
   formatAppMappingsForNotification = app_mappings: let
@@ -972,20 +1025,24 @@ in rec {
       mappingsText = formatMappingsForNotification mappings;
     in
       if mappingsText != ""
-      then "${appName}: ${mappingsText}"
+      then let
+        # If mappings span multiple lines, indent continuation lines
+        mappingsLines = splitString "\n" mappingsText;
+        firstLine = "${appName}: ${head mappingsLines}";
+        remainingLines = tail mappingsLines;
+        indentedRemainingLines = map (line: "  ${line}") remainingLines;
+      in
+        concatStringsSep "\n" ([firstLine] ++ indentedRemainingLines)
       else "${appName}: (no mappings)";
 
-    # Get first few apps (limit to avoid notification overflow)
+    # Format all apps without arbitrary limits
     appsList = mapAttrsToList formatAppMappings app_mappings;
-    limitedApps = take 3 appsList; # Show first 3 apps
-    hasMore = length appsList > 3;
 
-    appsText = concatStringsSep "\n" limitedApps;
+    # Join with newlines and ensure total width doesn't exceed bounds
+    appsText = concatStringsSep "\n" appsList;
   in
     if app_mappings == {}
     then ""
-    else if hasMore
-    then "${appsText}\n..."
     else appsText;
 
   # Helper function to format sublayers for debug notifications
@@ -995,20 +1052,24 @@ in rec {
       mappingsText = formatMappingsForNotification mappings;
     in
       if mappingsText != ""
-      then "${sublayerKey}: ${mappingsText}"
+      then let
+        # If mappings span multiple lines, indent continuation lines
+        mappingsLines = splitString "\n" mappingsText;
+        firstLine = "${sublayerKey}: ${head mappingsLines}";
+        remainingLines = tail mappingsLines;
+        indentedRemainingLines = map (line: "  ${line}") remainingLines;
+      in
+        concatStringsSep "\n" ([firstLine] ++ indentedRemainingLines)
       else "${sublayerKey}: (no mappings)";
 
-    # Get first few sublayers (limit to avoid notification overflow)
+    # Format all sublayers without arbitrary limits
     sublayersList = mapAttrsToList formatSublayerMappings sublayers;
-    limitedSublayers = take 3 sublayersList; # Show first 3 sublayers
-    hasMore = length sublayersList > 3;
 
-    sublayersText = concatStringsSep "\n" limitedSublayers;
+    # Join with newlines
+    sublayersText = concatStringsSep "\n" sublayersList;
   in
     if sublayers == {}
     then ""
-    else if hasMore
-    then "${sublayersText}\n..."
     else sublayersText;
 
   # Create a debug notification wrapper for any key mapping
