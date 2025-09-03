@@ -270,8 +270,8 @@ in rec {
             mappingsText = formatMappingsForNotification mappings;
             notificationText =
               if mappingsText != ""
-              then "Layer activated: ${layer_name}\n${mappingsText}"
-              else "Layer activated: ${layer_name}";
+              then "${layer_name}\n${mappingsText}"
+              else "${layer_name}";
           in [
             (showNotification "layer_${variable_name}" notificationText)
           ]
@@ -299,10 +299,7 @@ in rec {
           ]
           else []
         );
-      description =
-        if enable_debug
-        then "Debug Layer key (${key})"
-        else "Layer key (${key})";
+      description = "Layer key (${key})";
     };
   in
     rules.mkRule "Layer: ${key}" ([layerKeyManipulator] ++ layerManipulators);
@@ -578,8 +575,8 @@ in rec {
             mappingsText = formatAppMappingsForNotification app_mappings;
             notificationText =
               if mappingsText != ""
-              then "App Layer activated: ${layer_name}\n${mappingsText}"
-              else "App Layer activated: ${layer_name}";
+              then "${layer_name}\n${mappingsText}"
+              else " ${layer_name}";
           in [
             (showNotification "layer_${variable_name}" notificationText)
           ]
@@ -1111,8 +1108,8 @@ in rec {
             mappingsText = formatSublayersForNotification sublayers;
             notificationText =
               if mappingsText != ""
-              then "Sublayer activated: ${layer_name}\n${mappingsText}"
-              else "Sublayer activated: ${layer_name}";
+              then "${layer_name}\n${mappingsText}"
+              else "${layer_name}";
           in [
             (showNotification "layer_${variable_name}" notificationText)
           ]
