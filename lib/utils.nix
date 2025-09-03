@@ -68,8 +68,8 @@ in rec {
             mappingsText = formatMappingsForNotification mappings;
             notificationText =
               if mappingsText != ""
-              then "hyper_mode\n${mappingsText}"
-              else "hyper_mode";
+              then "HYPER_MODE\n\n${mappingsText}"
+              else "HYPER_MODE";
           in [
             (showNotification "layer_hyper_mode" notificationText)
           ]
@@ -270,8 +270,8 @@ in rec {
             mappingsText = formatMappingsForNotification mappings;
             notificationText =
               if mappingsText != ""
-              then "${variable_name}\n${mappingsText}"
-              else "${variable_name}";
+              then "${lib.toUpper variable_name}\n\n${mappingsText}"
+              else "${lib.toUpper variable_name}";
           in [
             (showNotification "layer_${variable_name}" notificationText)
           ]
@@ -575,8 +575,8 @@ in rec {
             mappingsText = formatAppMappingsForNotification app_mappings;
             notificationText =
               if mappingsText != ""
-              then "${variable_name}\n${mappingsText}"
-              else "${variable_name}";
+              then "${lib.toUpper variable_name}\n\n${mappingsText}"
+              else "${lib.toUpper variable_name}";
           in [
             (showNotification "layer_${variable_name}" notificationText)
           ]
@@ -1169,8 +1169,8 @@ in rec {
             mappingsText = formatSublayersForNotification sublayers;
             notificationText =
               if mappingsText != ""
-              then "${variable_name}\n${mappingsText}"
-              else "${variable_name}";
+              then "${lib.toUpper variable_name}\n\n${mappingsText}"
+              else "${lib.toUpper variable_name}";
           in [
             (showNotification "layer_${variable_name}" notificationText)
           ]
