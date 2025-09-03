@@ -1,12 +1,8 @@
 # Example demonstrating the enhanced layerKey function with modifier support
-{ lib, ... }:
-
-let
-  karabinix = import ../lib { inherit lib; };
+{lib, ...}: let
+  karabinix = import ../lib {inherit lib;};
   inherit (karabinix) layerKey mkToEvent keyCodes;
-in
-
-{
+in {
   # Enhanced IntelliJ layer with support for Shift+M
   intellijLayer = layerKey {
     key = keyCodes.i;

@@ -1,12 +1,14 @@
 # Home Manager Integration Example
 # This shows how to use karabinix with home-manager
-# 
+#
 # This file should be used as part of a flake that includes karabinix as an input.
 # See the flake.nix example below for the complete setup.
-
-{ config, pkgs, karabinix, ... }:
-
 {
+  config,
+  pkgs,
+  karabinix,
+  ...
+}: {
   # Import the karabinix home-manager module
   imports = [
     karabinix.homeManagerModules.karabinix
@@ -15,11 +17,11 @@
   # Enable and configure karabinix
   services.karabinix = {
     enable = true;
-    
+
     # Optional: Install Karabiner Elements via Nix (default: false)
     # installPackage = true;
     # package = pkgs.karabiner-elements;
-    
+
     configuration = with karabinix.lib; {
       profiles = [
         (mkProfile {

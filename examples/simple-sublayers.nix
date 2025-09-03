@@ -14,30 +14,30 @@ with karabinix.lib;
           rules = [
             # Simple sublayer system
             (sublayerKey {
-              key = keyCodes.caps_lock;     # Caps Lock is the hyper key
-              alone_key = keyCodes.escape;  # Caps Lock alone = Escape
-              
+              key = keyCodes.caps_lock; # Caps Lock is the hyper key
+              alone_key = keyCodes.escape; # Caps Lock alone = Escape
+
               sublayers = {
                 # Window management sublayer
                 "o" = {
-                  "w" = raycastWindow "left-half";      # Hyper+o+w = Left half
-                  "e" = raycastWindow "right-half";     # Hyper+o+e = Right half
-                  "f" = raycastWindow "maximize";       # Hyper+o+f = Fullscreen
-                  "c" = raycastWindow "center";         # Hyper+o+c = Center
+                  "w" = raycastWindow "left-half"; # Hyper+o+w = Left half
+                  "e" = raycastWindow "right-half"; # Hyper+o+e = Right half
+                  "f" = raycastWindow "maximize"; # Hyper+o+f = Fullscreen
+                  "c" = raycastWindow "center"; # Hyper+o+c = Center
                 };
 
-                # Browser shortcuts sublayer  
+                # Browser shortcuts sublayer
                 "b" = {
-                  "t" = { shell_command = "open https://twitter.com"; };    # Hyper+b+t = Twitter
-                  "g" = { shell_command = "open https://github.com"; };     # Hyper+b+g = GitHub
-                  "y" = { shell_command = "open https://youtube.com"; };    # Hyper+b+y = YouTube
+                  "t" = {shell_command = "open https://twitter.com";}; # Hyper+b+t = Twitter
+                  "g" = {shell_command = "open https://github.com";}; # Hyper+b+g = GitHub
+                  "y" = {shell_command = "open https://youtube.com";}; # Hyper+b+y = YouTube
                 };
 
                 # App launcher sublayer
                 "a" = {
-                  "c" = { shell_command = "open -a 'Visual Studio Code'"; }; # Hyper+a+c = VS Code
-                  "s" = { shell_command = "open -a 'Slack'"; };              # Hyper+a+s = Slack
-                  "t" = { shell_command = "open -a 'Terminal'"; };           # Hyper+a+t = Terminal
+                  "c" = {shell_command = "open -a 'Visual Studio Code'";}; # Hyper+a+c = VS Code
+                  "s" = {shell_command = "open -a 'Slack'";}; # Hyper+a+s = Slack
+                  "t" = {shell_command = "open -a 'Terminal'";}; # Hyper+a+t = Terminal
                 };
               };
             })

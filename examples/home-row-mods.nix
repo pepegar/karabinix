@@ -1,14 +1,9 @@
 # Home Row Mods Examples
 # This file demonstrates various ways to use the home row mod utilities in Karabinix
-
-{ lib, ... }:
-
-let
-  karabinix = import ../lib { inherit lib; };
+{lib, ...}: let
+  karabinix = import ../lib {inherit lib;};
   inherit (karabinix) keyCodes homeRowMod homeRowMods homeRowModsWithCombinations standardHomeRowMods altHomeRowMods;
-in
-
-{
+in {
   # Example 1: Using the predefined standard home row mods
   # This matches the common QWERTY home row mod layout:
   # A=Shift, S=Option, D=Control, F=Command | J=Command, K=Control, L=Option, ;=Shift
@@ -21,12 +16,12 @@ in
   # Example 3: Custom home row mods using homeRowMods function
   # Your exact configuration from the original request
   example3 = homeRowMods {
-    s = keyCodes.left_option;   # S = Option when held, S when tapped
-    d = keyCodes.left_control;  # D = Control when held, D when tapped  
-    f = keyCodes.left_command;  # F = Command when held, F when tapped
+    s = keyCodes.left_option; # S = Option when held, S when tapped
+    d = keyCodes.left_control; # D = Control when held, D when tapped
+    f = keyCodes.left_command; # F = Command when held, F when tapped
     j = keyCodes.right_command; # J = Command when held, J when tapped
     k = keyCodes.right_control; # K = Control when held, K when tapped
-    l = keyCodes.right_option;  # L = Option when held, L when tapped
+    l = keyCodes.right_option; # L = Option when held, L when tapped
   };
 
   # Example 4: Individual home row mod with custom description
@@ -55,7 +50,7 @@ in
     k = keyCodes.right_control;
     l = keyCodes.right_option;
     semicolon = keyCodes.right_shift;
-    
+
     # Number row mods (less common but some users like them)
     "1" = keyCodes.left_shift;
     "2" = keyCodes.left_option;
@@ -96,7 +91,7 @@ in
   # Example 9: Minimal combination setup (just the core 4 keys)
   # This creates combinations like:
   # - S+D = Control+Option
-  # - D+F = Option+Command  
+  # - D+F = Option+Command
   # - J+K = Command+Option
   # - K+L = Option+Control
   # - S+D+F = Control+Option+Command (3-key combo)

@@ -1,13 +1,13 @@
-{ config, lib, pkgs, ... }:
-
-with lib;
-
-let
-  cfg = config.services.karabinix;
-  karabinixLib = import ../lib { inherit lib; };
-in
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
+  cfg = config.services.karabinix;
+  karabinixLib = import ../lib {inherit lib;};
+in {
   options.services.karabinix = {
     enable = mkEnableOption "Karabinix Karabiner Elements configuration";
 
@@ -16,11 +16,11 @@ in
       default = {};
       description = ''
         Karabiner Elements configuration using karabinix DSL.
-        
+
         Note: This module only manages the configuration file by default.
         To install Karabiner Elements, either set installPackage = true,
         or install it separately via Homebrew: `brew install --cask karabiner-elements`
-        
+
         Example:
         ```nix
         {
@@ -67,25 +67,26 @@ in
   };
 
   config = mkIf cfg.enable {
-    services.karabinix.configFile = 
-      let
-        configJson = karabinixLib.mkConfiguration cfg.configuration;
-      in
+    services.karabinix.configFile = let
+      configJson = karabinixLib.mkConfiguration cfg.configuration;
+    in
       pkgs.writeText "karabiner.json" configJson;
 
     # Create the karabiner configuration directory and symlink the config
     home.file.".config/karabiner/karabiner.json".source = cfg.configFile;
 
     # Add reload script (always available)
-    home.packages = [
-      (pkgs.writeShellScriptBin "karabinix-reload" ''
-        echo "Reloading Karabiner Elements configuration..."
-        launchctl kickstart -k gui/$(id -u)/org.pqrs.karabiner.karabiner_console_user_server
-        echo "Configuration reloaded!"
-      '')
-    ] ++ optionals (cfg.installPackage && cfg.package != null) [
-      # Conditionally install Karabiner Elements package
-      cfg.package
-    ];
+    home.packages =
+      [
+        (pkgs.writeShellScriptBin "karabinix-reload" ''
+          echo "Reloading Karabiner Elements configuration..."
+          launchctl kickstart -k gui/$(id -u)/org.pqrs.karabiner.karabiner_console_user_server
+          echo "Configuration reloaded!"
+        '')
+      ]
+      ++ optionals (cfg.installPackage && cfg.package != null) [
+        # Conditionally install Karabiner Elements package
+        cfg.package
+      ];
   };
 }
