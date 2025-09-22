@@ -102,7 +102,8 @@ with lib; rec {
     // (optionalAttrs lazy {inherit lazy;})
     // (optionalAttrs (!repeat) {inherit repeat;})
     // (optionalAttrs halt {inherit halt;})
-    // (optionalAttrs (hold_down_milliseconds != null) {inherit hold_down_milliseconds;});
+    // (optionalAttrs (hold_down_milliseconds != null) {inherit hold_down_milliseconds;})
+    // (optionalAttrs (description != null) {inherit description;});
 
   # Helper to create modifiers specification
   mkModifiers = {
