@@ -1,6 +1,4 @@
-{
-  lib,
-}:
+{lib}:
 with lib; let
   rules = import ./rules.nix {inherit lib;};
   keyCodes = import ./keycodes.nix;
@@ -619,14 +617,14 @@ in rec {
           if modifiers == []
           then key
           else "${concatStringsSep "" symbolModifiers}${key}"
-      else if isAttrs target && target ? shell_command
+      else if isAttrs target
       then let
         # Handle shell commands - use description if available
         description = target.description or null;
       in
         if description != null
         then description
-        else "shell"
+        else "action"
       else "action";
 
     # Format individual mapping with symbolic trigger
