@@ -77,6 +77,7 @@ with lib; rec {
     key_code ? null,
     consumer_key_code ? null,
     pointing_button ? null,
+    mouse_key ? null,
     shell_command ? null,
     select_input_source ? null,
     set_variable ? null,
@@ -92,6 +93,7 @@ with lib; rec {
     // (optionalAttrs (key_code != null) {inherit key_code;})
     // (optionalAttrs (consumer_key_code != null) {inherit consumer_key_code;})
     // (optionalAttrs (pointing_button != null) {inherit pointing_button;})
+    // (optionalAttrs (mouse_key != null) {inherit mouse_key;})
     // (optionalAttrs (shell_command != null) {inherit shell_command;})
     // (optionalAttrs (select_input_source != null) {inherit select_input_source;})
     // (optionalAttrs (set_variable != null) {inherit set_variable;})
