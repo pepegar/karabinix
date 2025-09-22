@@ -646,11 +646,11 @@ in rec {
     mappingsList = mapAttrsToList formatMapping mappings;
 
     # Join mappings with separator and wrap to 80 characters
-    allMappingsText = concatStringsSep " | " mappingsList;
+    allMappingsText = concatStringsSep "\n" mappingsList;
     wrappedMappingsText = wrapText {
       text = allMappingsText;
       maxWidth = 80;
-      separator = " | ";
+      separator = "\n";
       indent = "";
     };
   in
