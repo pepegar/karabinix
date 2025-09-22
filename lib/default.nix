@@ -1,7 +1,7 @@
 {lib}: let
   types = import ./types.nix {inherit lib;};
-  rules = import ./rules.nix {inherit lib types;};
-  utils = import ./utils.nix {inherit lib types;};
+  rules = import ./rules.nix {inherit lib;};
+  utils = import ./utils.nix {inherit lib;};
 in {
   inherit types;
 
@@ -19,11 +19,17 @@ in {
   # Utility functions
   inherit
     (utils)
+    # High-level functions
     layerKey
     appLayerKey
     vimNavigation
     raycastWindow
     homeRowModsWithCombinations
+    # Shared helper functions
+    mapModifier
+    parseTrigger
+    mkLayerManipulators
+    mkLayerToggleEvents
     ;
 
   # Key code constants

@@ -1,7 +1,4 @@
-{
-  lib,
-  types,
-}:
+{lib}:
 with lib; rec {
   # Create a simple key modification
   mkSimpleModification = from: to: {

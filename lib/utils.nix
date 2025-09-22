@@ -1,11 +1,114 @@
 {
   lib,
-  types,
 }:
 with lib; let
-  rules = import ./rules.nix {inherit lib types;};
+  rules = import ./rules.nix {inherit lib;};
   keyCodes = import ./keycodes.nix;
 in rec {
+  # Helper function to map modifier names to Karabiner modifier names
+  mapModifier = mod:
+    if mod == "shift"
+    then "left_shift"
+    else if mod == "ctrl" || mod == "control"
+    then "left_control"
+    else if mod == "alt" || mod == "option"
+    then "left_option"
+    else if mod == "cmd" || mod == "command"
+    then "left_command"
+    else if mod == "fn"
+    then "fn"
+    else mod; # Pass through as-is for exact modifier names
+
+  # Helper function to parse trigger keys that may include modifiers
+  # Supports syntax like "shift+m", "ctrl+shift+a", or just "m"
+  parseTrigger = trigger: let
+    parts = splitString "+" trigger;
+    key_code = last parts;
+    modifierParts = init parts;
+  in
+    {
+      key_code = key_code;
+    }
+    // (optionalAttrs (modifierParts != []) {
+      modifiers = map mapModifier modifierParts;
+    });
+
+  # Helper function to create layer mapping manipulators
+  mkLayerManipulators = {
+    mappings,
+    variable_name,
+    layerDescription ? "Layer",
+    extraConditions ? [],
+  }:
+    mapAttrsToList (
+      trigger: target: let
+        triggerSpec = parseTrigger trigger;
+        fromEvent = rules.mkFromEvent ({
+            key_code = triggerSpec.key_code;
+          }
+          // (optionalAttrs (triggerSpec ? modifiers) {
+            modifiers = rules.mkModifiers {
+              mandatory = triggerSpec.modifiers;
+            };
+          }));
+      in
+        rules.mkManipulator {
+          from = fromEvent;
+          to =
+            if isString target
+            then [
+              (rules.mkToEvent {key_code = target;})
+            ]
+            else if isList target
+            then map (t: rules.mkToEvent {key_code = t;}) target
+            else [
+              target
+            ];
+          conditions =
+            [
+              (rules.mkCondition {
+                type = "variable_if";
+                name = variable_name;
+                value = 1;
+              })
+            ]
+            ++ extraConditions;
+          description = "${layerDescription}: ${trigger} -> ${
+            if isString target
+            then target
+            else if isList target
+            then toString target
+            else "action"
+          }";
+        }
+    )
+    mappings;
+
+  # Helper function to create layer activation/deactivation events with optional debug
+  mkLayerToggleEvents = {
+    variable_name,
+    value, # 1 for activation, 0 for deactivation
+    enable_debug ? false,
+    notificationId ? null,
+    notificationText ? null,
+  }:
+    [
+      (rules.mkToEvent {
+        set_variable = {
+          name = variable_name;
+          inherit value;
+        };
+      })
+    ]
+    ++ (
+      if enable_debug && notificationId != null
+      then
+        if value == 1 && notificationText != null
+        then [(showNotification notificationId notificationText)]
+        else [(hideNotification notificationId)]
+      else []
+    );
+
   # Create a layer key (key that activates a layer when held)
   layerKey = {
     key,
@@ -14,125 +117,43 @@ in rec {
     variable_name ? "${key}_layer",
     enable_debug ? false, # Disabled by default
   }: let
-    # Helper function to parse trigger keys that may include modifiers
-    # Supports syntax like "shift+m", "ctrl+shift+a", or just "m"
-    parseTrigger = trigger: let
-      parts = splitString "+" trigger;
-      key_code = last parts;
-      modifierParts = init parts;
-
-      # Map modifier names to Karabiner modifier names
-      mapModifier = mod:
-        if mod == "shift"
-        then "left_shift"
-        else if mod == "ctrl" || mod == "control"
-        then "left_control"
-        else if mod == "alt" || mod == "option"
-        then "left_option"
-        else if mod == "cmd" || mod == "command"
-        then "left_command"
-        else if mod == "fn"
-        then "fn"
-        else mod; # Pass through as-is for exact modifier names
-    in
-      {
-        key_code = key_code;
-      }
-      // (optionalAttrs (modifierParts != []) {
-        modifiers = map mapModifier modifierParts;
-      });
-
     # Create manipulators for each mapping in the layer
-    layerManipulators =
-      mapAttrsToList (
-        trigger: target: let
-          triggerSpec = parseTrigger trigger;
-          fromEvent = rules.mkFromEvent ({
-              key_code = triggerSpec.key_code;
-            }
-            // (optionalAttrs (triggerSpec ? modifiers) {
-              modifiers = rules.mkModifiers {
-                mandatory = triggerSpec.modifiers;
-              };
-            }));
-        in
-          rules.mkManipulator {
-            from = fromEvent;
-            to =
-              if isString target
-              then [
-                (rules.mkToEvent {key_code = target;})
-              ]
-              else if isList target
-              then map (t: rules.mkToEvent {key_code = t;}) target
-              else [
-                target
-              ];
-            conditions = [
-              (rules.mkCondition {
-                type = "variable_if";
-                name = variable_name;
-                value = 1;
-              })
-            ];
-            description = "Layer ${key}: ${trigger} -> ${
-              if isString target
-              then target
-              else if isList target
-              then toString target
-              else "action"
-            }";
-          }
-      )
-      mappings;
+    layerManipulators = mkLayerManipulators {
+      inherit mappings variable_name;
+      layerDescription = "Layer ${key}";
+    };
 
     # Layer activation key with optional debug notifications
     layerKeyManipulator = rules.mkManipulator {
       from = rules.mkFromEvent {key_code = key;};
-      to =
-        [
-          (rules.mkToEvent {
-            set_variable = {
-              name = variable_name;
-              value = 1;
-            };
-          })
-        ]
-        ++ (
+      to = let
+        notificationText =
           if enable_debug
           then let
             mappingsText = formatMappingsForNotification mappings;
-            notificationText =
-              if mappingsText != ""
-              then "${lib.toUpper variable_name}\n\n${mappingsText}"
-              else "${lib.toUpper variable_name}";
-          in [
-            (showNotification "layer_${variable_name}" notificationText)
-          ]
-          else []
-        );
+          in
+            if mappingsText != ""
+            then "${lib.toUpper variable_name}\n\n${mappingsText}"
+            else "${lib.toUpper variable_name}"
+          else null;
+      in
+        mkLayerToggleEvents {
+          inherit variable_name enable_debug;
+          value = 1;
+          notificationId = "layer_${variable_name}";
+          inherit notificationText;
+        };
       to_if_alone =
         if alone_key != null
         then [
           (rules.mkToEvent {key_code = alone_key;})
         ]
         else [];
-      to_after_key_up =
-        [
-          (rules.mkToEvent {
-            set_variable = {
-              name = variable_name;
-              value = 0;
-            };
-          })
-        ]
-        ++ (
-          if enable_debug
-          then [
-            (hideNotification "layer_${variable_name}")
-          ]
-          else []
-        );
+      to_after_key_up = mkLayerToggleEvents {
+        inherit variable_name enable_debug;
+        value = 0;
+        notificationId = "layer_${variable_name}";
+      };
       description = "Layer key (${key})";
     };
   in
@@ -222,78 +243,13 @@ in rec {
     app_mappings, # attrset where keys are app bundle IDs and values are mapping attrsets
     enable_debug ? false, # Disabled by default
   }: let
-    # Helper function to parse trigger keys that may include modifiers
-    # Supports syntax like "shift+m", "ctrl+shift+a", or just "m"
-    parseTrigger = trigger: let
-      parts = splitString "+" trigger;
-      key_code = last parts;
-      modifierParts = init parts;
-
-      # Map modifier names to Karabiner modifier names
-      mapModifier = mod:
-        if mod == "shift"
-        then "left_shift"
-        else if mod == "ctrl" || mod == "control"
-        then "left_control"
-        else if mod == "alt" || mod == "option"
-        then "left_option"
-        else if mod == "cmd" || mod == "command"
-        then "left_command"
-        else if mod == "fn"
-        then "fn"
-        else mod; # Pass through as-is for exact modifier names
-    in
-      {
-        key_code = key_code;
-      }
-      // (optionalAttrs (modifierParts != []) {
-        modifiers = map mapModifier modifierParts;
-      });
-
     # Create manipulators for each app's mappings
     createAppManipulators = appId: mappings:
-      mapAttrsToList (
-        trigger: target: let
-          triggerSpec = parseTrigger trigger;
-          fromEvent = rules.mkFromEvent ({
-              key_code = triggerSpec.key_code;
-            }
-            // (optionalAttrs (triggerSpec ? modifiers) {
-              modifiers = rules.mkModifiers {
-                mandatory = triggerSpec.modifiers;
-              };
-            }));
-        in
-          rules.mkManipulator {
-            from = fromEvent;
-            to =
-              if isString target
-              then [
-                (rules.mkToEvent {key_code = target;})
-              ]
-              else if isList target
-              then map (t: rules.mkToEvent {key_code = t;}) target
-              else [
-                target
-              ];
-            conditions = [
-              (rules.mkCondition {
-                type = "variable_if";
-                name = variable_name;
-                value = 1;
-              })
-              (appCondition appId "frontmost_application_if")
-            ];
-            description = "App Layer ${key} (${appId}): ${trigger} -> ${
-              if isString target
-              then target
-              else if isList target
-              then toString target
-              else "action"
-            }";
-          }
-      )
-      mappings;
+      mkLayerManipulators {
+        inherit mappings variable_name;
+        layerDescription = "App Layer ${key} (${appId})";
+        extraConditions = [(appCondition appId "frontmost_application_if")];
+      };
 
     # Create all manipulators for all apps
     allAppManipulators = flatten (mapAttrsToList createAppManipulators app_mappings);
@@ -301,50 +257,34 @@ in rec {
     # Layer activation key with optional debug notifications
     layerKeyManipulator = rules.mkManipulator {
       from = rules.mkFromEvent {key_code = key;};
-      to =
-        [
-          (rules.mkToEvent {
-            set_variable = {
-              name = variable_name;
-              value = 1;
-            };
-          })
-        ]
-        ++ (
+      to = let
+        notificationText =
           if enable_debug
           then let
             mappingsText = formatAppMappingsForNotification app_mappings;
-            notificationText =
-              if mappingsText != ""
-              then "${lib.toUpper variable_name}\n\n${mappingsText}"
-              else "${lib.toUpper variable_name}";
-          in [
-            (showNotification "layer_${variable_name}" notificationText)
-          ]
-          else []
-        );
+          in
+            if mappingsText != ""
+            then "${lib.toUpper variable_name}\n\n${mappingsText}"
+            else "${lib.toUpper variable_name}"
+          else null;
+      in
+        mkLayerToggleEvents {
+          inherit variable_name enable_debug;
+          value = 1;
+          notificationId = "layer_${variable_name}";
+          inherit notificationText;
+        };
       to_if_alone =
         if alone_key != null
         then [
           (rules.mkToEvent {key_code = alone_key;})
         ]
         else [];
-      to_after_key_up =
-        [
-          (rules.mkToEvent {
-            set_variable = {
-              name = variable_name;
-              value = 0;
-            };
-          })
-        ]
-        ++ (
-          if enable_debug
-          then [
-            (hideNotification "layer_${variable_name}")
-          ]
-          else []
-        );
+      to_after_key_up = mkLayerToggleEvents {
+        inherit variable_name enable_debug;
+        value = 0;
+        notificationId = "layer_${variable_name}";
+      };
       description =
         if enable_debug
         then "Debug App Layer key (${key})"
