@@ -669,9 +669,8 @@ in rec {
       then let
         # If mappings span multiple lines, indent continuation lines
         mappingsLines = splitString "\n" mappingsText;
-        firstLine = "${appName}: ${head mappingsLines}";
-        remainingLines = tail mappingsLines;
-        indentedRemainingLines = map (line: "  ${line}") remainingLines;
+        firstLine = "${appName}:\n";
+        indentedRemainingLines = map (line: "    ${line}") mappingsLines;
       in
         concatStringsSep "\n" ([firstLine] ++ indentedRemainingLines)
       else "${appName}: (no mappings)";
